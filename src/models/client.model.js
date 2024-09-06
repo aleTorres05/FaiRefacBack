@@ -21,8 +21,14 @@ const schema = new mongoose.Schema({
         minLength: 10,
         maxLength:10,
     },
-    cars: [car],
-    quotes: [quote],
+    cars: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "car" 
+    }],
+    quotes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "quote" 
+    }],
 })
 
 
