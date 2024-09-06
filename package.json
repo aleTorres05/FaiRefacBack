@@ -15,7 +15,6 @@
     "url": "https://github.com/aleTorres05/FaiRefacBack/issues"
   },
   "homepage": "https://github.com/aleTorres05/FaiRefacBack#readme",
-  "description": "",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -23,6 +22,8 @@
     "express": "^4.19.2",
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.6.0"
-  }
+    "mongoose": "^8.6.1"
+  },
+  "keywords": [],
+  "description": ""
 }
