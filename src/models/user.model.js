@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const modelName = 'user'
+const modelName = 'User'
 
 const schema = new mongoose.Schema({
     email: {
@@ -19,7 +19,7 @@ const schema = new mongoose.Schema({
     },
     client: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "client",
+        ref: "Client",
     },
     isRepairShop: {
         type: Boolean,
@@ -27,7 +27,7 @@ const schema = new mongoose.Schema({
     },
     repairShop: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "repairShop",
+        ref: "RepairShop",
     },
     created_at: {
         type: Date,

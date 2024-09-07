@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const modelName = "car"
+const modelName = "Car"
 
 const schema = new mongoose.Schema({
     brand: {
@@ -35,7 +35,7 @@ const schema = new mongoose.Schema({
     },
     quotes: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "quote" 
+        ref: "Quote" 
     }],
     carPic: {
         type: String,

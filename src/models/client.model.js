@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 
-const modelName = 'client';
+const modelName = 'Client';
 
 const schema = new mongoose.Schema({
     name: {
@@ -23,11 +23,11 @@ const schema = new mongoose.Schema({
     },
     cars: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "car" 
+        ref: "Car" 
     }],
     quotes: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "quote" 
+        ref: "Quote" 
     }],
 })
 

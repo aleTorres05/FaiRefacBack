@@ -1,5 +1,49 @@
 const mongoose = require('mongoose');
 
+const addressSchema = new mongoose.Schema({
+    street: {
+        type: String,
+        required: true,
+        minLength: 1,
+        maxLength: 100,
+    },
+    extNum: {
+        type: String,
+        required: true,
+        minLength: 1,
+        maxLength: 10,
+    },
+    intNum: {
+        type: String,
+        minLength: 1,
+        maxLength: 10,
+    },
+    neighborhood: {
+        type: String,
+        required: true,
+        minLength: 1,
+        maxLength: 100,
+    },
+    zipCode: {
+        type: String,
+        required: true,
+        minLength: 5,
+        maxLength: 10,
+    },
+    city: {
+        type: String,
+        required: true,
+        minLength: 1,
+        maxLength: 50,
+    },
+    state: {
+        type: String,
+        required: true,
+        minLength: 1,
+        maxLength: 50,
+    },
+});
+
 const modelName = "Mechanic"
 
 const schema = new mongoose.Schema({
@@ -28,13 +72,8 @@ const schema = new mongoose.Schema({
         maxLength: 10,
     },
     address: {
-        street: String,
-        extNum: String,
-        intNum: String,
-        neighborhood: String,
-        zipCode: String,
-        city: String,
-        state: String,
+        type: addressSchema,
+        required: true,
     },
     quote: {
         type: mongoose.Schema.Types.ObjectId,
