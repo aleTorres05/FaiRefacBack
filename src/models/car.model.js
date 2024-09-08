@@ -42,4 +42,4 @@ const schema = new mongoose.Schema({
     },
 })
 
-module.exports = mongosse.model(modelName, schema);
+module.exports = mongoose.model(modelName, schema);
