@@ -1,7 +1,8 @@
 const createError = require('http-errors');
 const encrypt = require('../lib/encrypt');
 const User = require('../models/user.model');
-const Client = require('../models/client.model')
+const Client = require('../models/client.model');
+const RepairShop = require('../models/repairShop.model');
 
 
 async function create(userData) {
@@ -49,10 +50,42 @@ async function updateByIdUserClient(id, clientData, userId) {
     user = await user.populate("client");
 
     return user;
+};
+
+async function updateByIdUserRepairShop(id, repairShopData, userId) {
+
+    let user = await User.findById(id);
+
+    if (!user) {
+        throw createError(404, 'User not found');
+    }
+
+    if (user._id.toString() !== userId.toString()) {
+        throw createError(403, 'Unauthorized to update this info')
+    }
+
+    if (user.repairShop) {
+        throw createError(405, 'User cannot be updated')
+    }
+
+    if (user.isRepairShop !== true) {
+        throw createError(400, 'User must be a repair shop owner to perform this action');
+    }
+
+    const newRepairShop = await RepairShop.create(repairShopData);
+
+    user.repairShop = newRepairShop._id;
+
+    await user.save();
+
+    user = await user.populate("repairShop");
+
+    return user;
 }
 
 module.exports = {
     create,
     getById,
     updateByIdUserClient,
+    updateByIdUserRepairShop,
 };
