@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const encrypt = require('../lib/encrypt');
 const User = require('../models/user.model');
+const Client = require('../models/client.model')
 
 
 async function create(userData) {
@@ -14,6 +15,44 @@ async function create(userData) {
     return newUser;
 };
 
+async function getById(id) {
+    const user = await User.findById(id);
+    return user;
+};
+
+async function updateByIdUserClient(id, clientData, userId) {
+
+    let user = await User.findById(id);
+
+    if (!user) {
+        throw createError(404, 'User not found');
+    }
+
+    if (user._id.toString() !== userId.toString()) {
+        throw createError(403, 'Unauthorized to update this info')
+    }
+
+    if (user.client) {
+        throw createError(405, 'User cannot be updated')
+    }
+
+    if (user.isClient !== true) {
+        throw createError(400, 'User must be a client to perform this action');
+    }
+
+    const newClient = await Client.create(clientData);
+
+    user.client = newClient._id;
+
+    await user.save();
+
+    user = await user.populate("client");
+
+    return user;
+}
+
 module.exports = {
     create,
+    getById,
+    updateByIdUserClient,
 };

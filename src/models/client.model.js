@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const modelName = 'Client';
 
 const schema = new mongoose.Schema({
-    name: {
+    firstName: {
         type: String,
         required: true,
         minLength: 2,
