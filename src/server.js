@@ -4,6 +4,7 @@ const express = require('express');
 // routers
 const authRouter = require('./routes/auth.router');
 const userRouter = require('./routes/user.router');
+const clientRouter = require('./routes/client.router')
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 //app.use(/routers, router)
 app.use('/auth', authRouter);
 app.use('/user',userRouter);
+app.use('/client', clientRouter);
 
 app.get('/',(req, res) => {
     res.json({
