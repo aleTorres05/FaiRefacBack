@@ -17,8 +17,28 @@ async function create(userData) {
 };
 
 async function getById(id) {
-    const user = await User.findById(id);
+    let user = await User.findById(id)
+    
+    if (!user) {
+        throw createError(404, "User not found")
+    }
+
+    if (user.isClient) {
+        user = await User.findById(id)
+        .populate({
+            path: "client",
+            populate: {
+                path: "cars",
+                model: "Car"
+            }
+        });
+    } else if (user.isRepairShop) {
+        user= await User.findById(id)
+        .populate("repairShop");
+    }
+
     return user;
+    
 };
 
 async function updateByIdUserClient(id, clientData, userId) {

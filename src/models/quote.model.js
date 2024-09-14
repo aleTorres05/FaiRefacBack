@@ -11,8 +11,7 @@ const QouteItemSchema = new mongoose.Schema({
         required: true,
     },
     unitPrice: {
-        typer: Number,
-        required: true,
+        type: Number,
     }
 });
 

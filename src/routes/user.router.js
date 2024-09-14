@@ -4,6 +4,23 @@ const auth = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
+router.get('/:id', async (req,res) => {
+    const { id } =req.params;
+    try {
+        const user = await userUseCase.getById(id);
+        res.json({
+            success: true,
+            data: { user },
+        });
+    } catch (error) {
+        res.status(error.status || 500);
+        res.json({
+            success: false,
+            error: error.message,
+        });
+    }
+})
+
 router.post('/', async (req, res) => {
     try {
         const createdUser = await userUseCase.create(req.body);
