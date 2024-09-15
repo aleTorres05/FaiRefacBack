@@ -22,4 +22,22 @@ router.post('/:clientId/car', auth, async (req, res) => {
     }
 });
 
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const client = await clientUseCase.getById(id);
+        res.json({
+            success: true,
+            data: { client },
+        })
+    } catch (error) {
+        res.status(error.status || 500);
+        res.json({
+            success: false,
+            error: error.message,
+        });
+    }
+})
+
 module.exports = router; 

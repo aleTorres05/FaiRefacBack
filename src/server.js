@@ -6,6 +6,7 @@ const authRouter = require('./routes/auth.router');
 const userRouter = require('./routes/user.router');
 const clientRouter = require('./routes/client.router');
 const mechanicRouter = require('./routes/mechanic.router');
+const quoteRouter = require('./routes/quote.router');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use('/auth', authRouter);
 app.use('/user',userRouter);
 app.use('/client', clientRouter);
 app.use('/mechanic', mechanicRouter);
+app.use('/quote', quoteRouter);
 
 app.get('/',(req, res) => {
     res.json({

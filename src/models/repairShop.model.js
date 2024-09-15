@@ -55,7 +55,7 @@ const schema = new mongoose.Schema({
         maxLength: 50,
     },
     phoneNumber: {
-        type: String,
+        type: Number,
         required: true,
         minLength: 10,
         maxLength: 10,
