@@ -12,6 +12,9 @@ const QouteItemSchema = new mongoose.Schema({
     },
     unitPrice: {
         type: Number,
+    },
+    totalPrice: {
+        type: Number,
     }
 });
 
@@ -40,7 +43,7 @@ const schema = new mongoose.Schema({
     }],
     status: {
         type: String,
-        enum: ["pending", "paid", "rejected", "shipped", "delivered"],
+        enum: ["pending", "quoted", "paid", "rejected", "shipped", "delivered"],
         default: "pending",
     },
     created_at: {
