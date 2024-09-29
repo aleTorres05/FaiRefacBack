@@ -13,8 +13,11 @@ const QouteItemSchema = new mongoose.Schema({
     unitPrice: {
         type: Number,
     },
-    totalPrice: {
+    itemTotalPrice: {
         type: Number,
+    },
+    brand: {
+        type: String,
     }
 });
 
@@ -41,6 +44,10 @@ const schema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "RepairShop",
     }],
+    quotedByRepairShop: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'RepairShop',
+    },
     status: {
         type: String,
         enum: ["pending", "quoted", "paid", "rejected", "shipped", "delivered"],

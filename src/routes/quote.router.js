@@ -20,4 +20,26 @@ router.post('/create', async (req,res) => {
     }
 });
 
+router.post('/:quoteId/repairshops/:repairShopId', async (req, res) => {
+    try {
+        const { quoteId, repairShopId } = req.params;
+        const items = req.body.items;
+
+        const newQuote = await quoteUseCase.createQuoteVersionByRepairShop(quoteId, repairShopId, items);
+
+        return res.status(201).json({
+            success: true,
+            data: {
+                quote: newQuote,
+            },
+        });
+    } catch (error) {
+        return res.status(error.status || 500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+});
+
+
 module.exports = router;

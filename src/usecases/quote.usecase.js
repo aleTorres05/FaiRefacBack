@@ -3,32 +3,33 @@ const Client = require('../models/client.model');
 const Car = require('../models/car.model');
 const RepairShop = require('../models/repairShop.model');
 const Mechanic = require('../models/mechanic.model');
-const createEror = require('http-errors');
+const createError = require('http-errors');
+
 
 async function create({ clientId, carId, mechanicId, items }) {
 
     if (!clientId || !carId || !mechanicId || items.length === 0) {
-        throw createEror(400, "Missing required data to create the quote.")
+        throw createError(400, "Missing required data to create the quote.")
     }
 
     const client = await Client.findById(clientId).populate('cars');
     if (!client) {
-        throw createEror(404, "Client not found.");
+        throw createError(404, "Client not found.");
     }
 
     const car = client.cars.find(car => car._id.toString() === carId);
     if (!car) {
-        throw createEror(404, "Car does not belong to the client.");
+        throw createError(404, "Car does not belong to the client.");
     }
 
     const mechanic = await Mechanic.findById(mechanicId);
     if (!mechanic) {
-        throw createEror(404, "Mechanic not found.");
+        throw createError(404, "Mechanic not found.");
     }
 
     const repairShops = await RepairShop.find({ "address.zipCode": mechanic.address.zipCode });
     if (!repairShops.length) {
-        throw createEror(404, "No repair shops found for the mechanic's postal code. ");
+        throw createError(404, "No repair shops found for the mechanic's postal code. ");
     }
 
     const newQuote = new Quote({
@@ -59,6 +60,62 @@ async function create({ clientId, carId, mechanicId, items }) {
 
 }
 
+async function createQuoteVersionByRepairShop(quoteId, repairShopId, items) {
+    const originalQuote = await Quote.findById(quoteId);
+    if (!originalQuote) {
+        throw createError(404, "Original quote not found.");
+    }
+
+    const client = await Client.findById(originalQuote.client);
+    if (!client) {
+        throw createError(404, "Client not found.");
+    }
+
+    if (!originalQuote.repairShops.includes(repairShopId)) {
+        throw createError(403, "Repair shop is not authorized to create a version of this quote.");
+    }
+
+    const updatedItems = items.map(item => {
+        const originalItem = originalQuote.items.id(item._id);
+        if (!originalItem) {
+            throw createError(404, `Item with id ${item._id} not found in original quote.`);
+        }
+
+        return {
+            ...originalItem.toObject(),  
+            unitPrice: item.unitPrice,   
+            brand: item.brand,
+            itemTotalPrice: originalItem.quantity * item.unitPrice 
+        };
+    });
+
+    const newQuote = new Quote({
+        client: originalQuote.client,
+        car: originalQuote.car,
+        mechanic: originalQuote.mechanic,
+        repairShops: [repairShopId],
+        items: updatedItems,
+        totalPrice: updatedItems.reduce((total, item) => total + item.itemTotalPrice, 0),
+        status: 'quoted',
+        quotedByRepairShop: repairShopId
+    });
+
+    await newQuote.save();
+
+    client.reviewedQuotesByRepairShops.push({
+        quoteId: newQuote._id,
+        repairShopId
+    });
+
+    await client.save();
+
+    return newQuote;
+}
+
+
+
+
 module.exports = {
     create,
+    createQuoteVersionByRepairShop,
 };

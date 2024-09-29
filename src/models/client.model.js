@@ -29,6 +29,10 @@ const schema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Quote" 
     }],
+    reviewedQuotesByRepairShops: [{
+            quoteId: { type: mongoose.Schema.Types.ObjectId, ref: 'Quote' },
+            repairShopId: { type: mongoose.Schema.Types.ObjectId, ref: 'RepairShop' }
+    }],
 })
 
 
