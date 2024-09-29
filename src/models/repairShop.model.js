@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-
 const addressSchema = new mongoose.Schema({
     street: {
         type: String,
@@ -45,7 +44,24 @@ const addressSchema = new mongoose.Schema({
     },
 });
 
-const modelName = "RepairShop"
+const quoteStateSchema = new mongoose.Schema({
+    quoteId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Quote",
+        required: true,
+    },
+    status: {
+        type: String,
+        enum: ["initial", "reviewed", "paid", "rejected", "delivered"],
+        default: "initial",
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now,
+    }
+});
+
+const modelName = "RepairShop";
 
 const schema = new mongoose.Schema({
     companyName: {
@@ -64,10 +80,7 @@ const schema = new mongoose.Schema({
         type: addressSchema,
         required: true,
     },
-    quotes: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Quote",
-    }]
+    quotes: [quoteStateSchema]
 });
 
 module.exports = mongoose.model(modelName, schema);

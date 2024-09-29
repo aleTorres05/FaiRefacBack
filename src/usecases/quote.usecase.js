@@ -44,11 +44,21 @@ async function create({ clientId, carId, mechanicId, items }) {
 
     const savedQuote = await newQuote.save();
 
-    client.quotes.push(savedQuote._id);
+    client.quotes.push({
+        quoteId: savedQuote._id,
+        status: 'initial',
+        repairShopId: null
+    });
     await client.save();
 
-    car.quotes.push(savedQuote._id);
-    await car.save();
+    for (const repairShop of repairShops) {
+        repairShop.quotes.push({
+            quoteId: savedQuote._id,
+            status: 'initial'
+        });
+        await repairShop.save();
+    }
+
 
     const populatedQuote = await savedQuote.populate([
         { path: 'client', model: 'Client' },
@@ -102,12 +112,19 @@ async function createQuoteVersionByRepairShop(quoteId, repairShopId, items) {
 
     await newQuote.save();
 
-    client.reviewedQuotesByRepairShops.push({
-        quoteId: newQuote._id,
-        repairShopId
-    });
+   client.quotes.push({
+    quoteId: newQuote._id,
+    status: 'reviewed',
+    repairShopId,
+   });
+   await client.save();
 
-    await client.save();
+   const repairShop = await RepairShop.findById(repairShopId);
+   repairShop.quotes.push({
+    quoteId: newQuote._id,
+    status:'reviewed'
+   });
+   await repairShop.save()
 
     return newQuote;
 }
