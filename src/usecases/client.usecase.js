@@ -21,14 +21,17 @@ async function associateCarWithClient(clientId, carData) {
 
 async function getById(id) {
     const client = await Client.findById(id)
-        .populate("cars")  
         .populate({
-            path: "reviewedQuotesByRepairShops.quoteId",  
-            select: "items totalPrice status"  
+            path: 'cars', 
+            model: 'Car'
         })
         .populate({
-            path: "reviewedQuotesByRepairShops.repairShopId", 
-            select: "name address"  
+            path: 'quotes.quoteId', 
+            model: 'Quote',
+        })
+        .populate({
+            path: 'quotes.repairShopId', 
+            model: 'RepairShop',
         });
 
     if (!client) {
