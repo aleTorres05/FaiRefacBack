@@ -42,6 +42,16 @@ const schema = new mongoose.Schema({
         minLength: 10,
         maxLength:10,
     },
+    profilePicture: {
+        type: String,
+        validate: {
+            validator: function(v) {
+                return /^(https?:\/\/[^\s$.?#].[^\s]*)$/i.test(v);
+            },
+            message: props => `${props.value} is not a valid URL!`
+        },
+        required: [false, 'Profile picture URL is optional'],
+    },
     cars: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Car" 
