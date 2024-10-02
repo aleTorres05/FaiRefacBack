@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const Client = require('../models/client.model');
 const Car = require('../models/car.model');
 
+
 async function associateCarWithClient(clientId, carData) {
 
     const client = await Client.findById(clientId);
@@ -40,6 +41,8 @@ async function getById(id) {
 
     return client;
 }
+
+
 
 module.exports = {
     associateCarWithClient,

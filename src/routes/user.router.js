@@ -1,6 +1,8 @@
 const express = require('express');
 const userUseCase = require('../usecases/user.usecase');
 const auth = require('../middlewares/auth.middleware');
+const upload = require('../middlewares/upload.middleware');
+
 
 const router = express.Router();
 
@@ -37,12 +39,13 @@ router.post('/', async (req, res) => {
     };
 });
 
-router.patch('/:id/client', auth, async (req, res) => {
+router.patch('/:id/client', auth, upload.single('profilePicture'), async (req, res) => {
     const { id } = req.params;
     const userId = req.user._id;
+    const file = req.file
     
     try {
-        const updatedUser = await userUseCase.updateByIdUserClient(id, req.body, userId);
+        const updatedUser = await userUseCase.updateByIdUserClient(id, req.body, userId, file);
         res.json({
             success: true,
             data: { user: updatedUser },
@@ -56,12 +59,13 @@ router.patch('/:id/client', auth, async (req, res) => {
     }
 });
 
-router.patch('/:id/repairShop', auth, async (req, res) => {
+router.patch('/:id/repairShop', auth, upload.single('profilePicture'), async (req, res) => {
     const { id } = req.params;
     const userId = req.user._id;
+    const file = req.file
     
     try {
-        const updatedUser = await userUseCase.updateByIdUserRepairShop(id, req.body, userId);
+        const updatedUser = await userUseCase.updateByIdUserRepairShop(id, req.body, userId, file);
         res.json({
             success: true,
             data: { user: updatedUser },
