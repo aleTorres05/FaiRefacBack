@@ -37,8 +37,16 @@ const schema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Quote" 
     }],
-    carPic: {
+    carPicture: {
         type: String,
+        validate: {
+            validator: function(v) {
+                return /^(https?:\/\/[^\s$.?#].[^\s]*)$/i.test(v);
+            },
+            message: props => `${props.value} is not a valid URL!`
+        },
+        required: [false, 'Profile picture URL is optional'],
+        default: "https://fairefac-assets.s3.us-east-2.amazonaws.com/FaiRefac-default-car-picture.png"
     },
 })
 
