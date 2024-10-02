@@ -1,9 +1,10 @@
 const createError = require('http-errors');
 const Client = require('../models/client.model');
 const Car = require('../models/car.model');
+const uploadToS3 = require('../lib/aws')
 
 
-async function associateCarWithClient(clientId, carData) {
+async function associateCarWithClient(clientId, carData, file = null) {
 
     const client = await Client.findById(clientId);
 
@@ -12,6 +13,13 @@ async function associateCarWithClient(clientId, carData) {
     }
 
     const newCar = await Car.create(carData);
+
+    if (file) {
+        const bucketName = process.env.AWS_BUCKET_NAME;
+        const imageUrl = await uploadToS3(file, bucketName);
+        newCar.carPicture = imageUrl;
+        await newCar.save(); 
+    }
 
     client.cars.push(newCar._id);
 

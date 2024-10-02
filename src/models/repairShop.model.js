@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const setDefaultProfilePicture = require('../middlewares/profilePicture.middleware')
 
 const addressSchema = new mongoose.Schema({
     street: {
@@ -92,5 +93,7 @@ const schema = new mongoose.Schema({
     },
     quotes: [quoteStateSchema]
 });
+
+schema.pre('save', setDefaultProfilePicture);
 
 module.exports = mongoose.model(modelName, schema);
