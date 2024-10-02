@@ -14,8 +14,7 @@ async function uploadToS3(file, bucketName) {
         Bucket: bucketName,
         Key: `${Date.now()}-${file.originalname}`,
         Body: file.buffer,
-        ContentType: file.mimetype,
-        ACL: 'public-read'
+        ContentType: file.mimetype
     };
 
     try {
@@ -27,7 +26,7 @@ async function uploadToS3(file, bucketName) {
         } else if (error.code === 'NoSuchBucket') {
             throw createError (404, 'The specified bucket does not exist');
         } else {
-            throw createError (405, 'Error uploading file to S3')
+            throw createError (405, `Error uploading file to S3: ${error.message}`)
         }
     }
 }

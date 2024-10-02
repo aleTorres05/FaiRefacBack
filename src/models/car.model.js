@@ -46,6 +46,7 @@ const schema = new mongoose.Schema({
             message: props => `${props.value} is not a valid URL!`
         },
         required: [false, 'Profile picture URL is optional'],
+        default: "https://fairefac-assets.s3.us-east-2.amazonaws.com/FaiRefac-default-car-picture.png"
     },
 })
 
