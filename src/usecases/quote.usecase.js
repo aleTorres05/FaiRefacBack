@@ -6,6 +6,7 @@ const Mechanic = require('../models/mechanic.model');
 const createError = require('http-errors');
 
 
+
 async function create({ clientId, carId, mechanicId, items }) {
 
     if (!clientId || !carId || !mechanicId || items.length === 0) {
@@ -129,10 +130,41 @@ async function createQuoteVersionByRepairShop(quoteId, repairShopId, items) {
     return newQuote;
 }
 
+async function getById(id) {
+    const quote = await Quote.findById(id)
+    .populate({
+        path: 'client',
+        model: 'Client'
+    })
+    .populate({
+        path: 'car',
+        model: 'Car'
+    })
+    .populate({
+        path: 'mechanic',
+        model: 'Mechanic'
+    })
+    .populate({
+        path: 'repairShops',
+        model: 'RepairShop'
+    })
+    .populate({
+        path: 'quotedByRepairShop',
+        model: 'RepairShop'
+    });
+    
+    if (!quote) {
+    throw createError(404, 'Quote not found')
+    }
+
+    return quote
+}
+
 
 
 
 module.exports = {
     create,
     createQuoteVersionByRepairShop,
+    getById,
 };

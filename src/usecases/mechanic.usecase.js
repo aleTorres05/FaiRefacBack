@@ -24,7 +24,14 @@ async function getAll() {
     return allMechanics;
 };
 
+async function getById(id) {
+    const mechanic = await Mechanic.findById(id)
+    return mechanic
+}
+
+
 module.exports = {
     create,
     getAll,
+    getById,
 }
