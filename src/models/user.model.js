@@ -37,6 +37,12 @@ const schema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    otp: {
+        type: String,
+    },
+    otpExpiresAt: {
+        type: Date,
+    }
 });
 
 module.exports = mongoose.model(modelName, schema);

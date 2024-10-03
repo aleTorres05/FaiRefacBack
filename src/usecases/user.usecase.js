@@ -4,6 +4,8 @@ const User = require('../models/user.model');
 const Client = require('../models/client.model');
 const RepairShop = require('../models/repairShop.model');
 const uploadToS3  = require('../lib/aws');
+const { generateOTP, sendOTPEmail } = require('../lib/emailService');
+
 
 
 async function create(userData) {
@@ -119,10 +121,48 @@ async function updateByIdUserRepairShop(id, repairShopData, userId, file = null)
 }
 
 
+async function generateAndSendOTP(email) {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        throw createError(404, 'User not found.')
+    }
+
+    const otp = generateOTP();
+
+    user.otp = otp;
+    user.otpExpiresAt = Date.now() + 10 * 60 * 1000;
+    await user.save();
+
+    await sendOTPEmail(email, otp);
+
+    return;
+} 
+
+async function verifyOTP(email, otp) {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        throw createError(404, 'User not found');
+    }
+
+    if (user.otp !== otp || user.otpExpiresAt < Date.now()) {
+        throw createError(400, 'Invalid or Expired OTP');
+    }
+
+    user.verifiedEmail = true;
+    user.otp = undefined
+    user.otpExpiresAt = undefined
+    await user.save();
+
+    return;
+}
 
 module.exports = {
     create,
     getById,
     updateByIdUserClient,
     updateByIdUserRepairShop,
+    generateAndSendOTP,
+    verifyOTP,
 };

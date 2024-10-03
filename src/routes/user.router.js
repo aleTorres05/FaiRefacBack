@@ -79,4 +79,40 @@ router.patch('/:id/repairShop', auth, upload.single('profilePicture'), async (re
     }
 });
 
+router.post('/send-otp', auth, async (req, res) => {
+    const { email } = req.body
+
+    try {
+        const sendOTP = await userUseCase.generateAndSendOTP(email);
+        res.json({
+            success: true,
+            data: { message: 'OTP was sended successfuly.'}
+        });
+    } catch (error) {
+        res.status(error.status || 500);
+        res.json({
+            success: false,
+            error: error.message,
+        });
+    }
+});
+
+router.post('/verify-otp', auth, async (req, res) => {
+    const {email, otp } = req.body;
+
+    try {
+        const verifiedOTP = await userUseCase.verifyOTP(email, otp);
+        res.json({
+            success: true,
+            data: { message: 'User was successfyly verified.'}
+        })
+    } catch (error) {
+        res.status(error.status || 500);
+        res.json({
+            success: false,
+            error: error.message,
+        });
+    }
+});
+
 module.exports = router;
