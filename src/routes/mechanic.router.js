@@ -1,6 +1,7 @@
 const express = require('express');
 const mechanicUseCase = require('../usecases/mechanic.usecase');
 
+
 const router = express.Router();
 
 router.get('/', async (req,res) => {
@@ -28,6 +29,25 @@ router.post('/', async (req,res) => {
         })
     } catch (error) {
         res.status(error.status || 500);
+        res.json({
+            success: false,
+            error: error.message,
+        });
+    }
+});
+
+router.get('/:id', async (req, res) => {
+
+    const { id } = req.params
+
+    try {
+        const mechanic = await mechanicUseCase.getById(id);
+        res.json({
+            success: true,
+            data: { data: mechanic }
+        });
+    } catch (error) {
+        res.status(error || 500);
         res.json({
             success: false,
             error: error.message,

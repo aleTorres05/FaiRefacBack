@@ -1,9 +1,11 @@
 const express = require('express');
 const quoteUseCase = require('../usecases/quote.usecase');
+const auth = require('../middlewares/auth.middleware');
+
 
 const router = express.Router();
 
-router.post('/create', async (req,res) => {
+router.post('/create', auth, async (req,res) => {
     try {
         const { clientId, carId, mechanicId, items } = req.body;
         const quote = await quoteUseCase.create({ clientId, carId, mechanicId, items });
@@ -17,28 +19,44 @@ router.post('/create', async (req,res) => {
             success: false,
             error: error.message,
         });
-    }
+    };
 });
 
-router.post('/:quoteId/repairshops/:repairShopId', async (req, res) => {
+router.post('/:id/repairshops/:repairShopId', auth, async (req, res) => {
     try {
-        const { quoteId, repairShopId } = req.params;
+        const { id, repairShopId } = req.params;
         const items = req.body.items;
 
-        const newQuote = await quoteUseCase.createQuoteVersionByRepairShop(quoteId, repairShopId, items);
-
-        return res.status(201).json({
+        const newQuote = await quoteUseCase.createQuoteVersionByRepairShop(id, repairShopId, items);
+        res.json({
             success: true,
-            data: {
-                quote: newQuote,
-            },
+            data: { quote: newQuote, },
         });
     } catch (error) {
-        return res.status(error.status || 500).json({
+        res.status(error.status || 500);
+        res.json({
             success: false,
             message: error.message,
         });
-    }
+    };
+});
+
+router.get('/:id', auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const quote = await quoteUseCase.getById(id);
+        res.json ({
+            success: true,
+            data: { quote },
+        });
+    } catch (error) {
+        res.status(error.status || 500);
+        res.json({
+            success: false,
+            message: error.message,
+        });
+    };
 });
 
 

@@ -6,7 +6,7 @@ const upload = require('../middlewares/upload.middleware');
 
 const router = express.Router();
 
-router.get('/:id', async (req,res) => {
+router.get('/:id', auth, async (req,res) => {
     const { id } =req.params;
     try {
         const user = await userUseCase.getById(id);
