@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.get("/:email", auth, async (req, res) => {
   const { email } = req.params;
+
   try {
     const user = await userUseCase.getByEmail(email);
     res.json({

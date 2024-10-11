@@ -18,14 +18,14 @@ async function create(userData) {
 }
 
 async function getByEmail(email) {
-  let user = await User.findOne(email);
+  let user = await User.findOne({ email });
 
   if (!user) {
     throw createError(404, "User not found");
   }
 
   if (user.isClient) {
-    user = await User.findOne(email).populate({
+    user = await User.findOne({ email }).populate({
       path: "client",
       populate: {
         path: "cars",
@@ -33,7 +33,7 @@ async function getByEmail(email) {
       },
     });
   } else if (user.isRepairShop) {
-    user = await User.findOne(email).populate("repairShop");
+    user = await User.findOne({ email }).populate("repairShop");
   }
 
   return user;
