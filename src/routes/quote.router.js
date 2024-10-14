@@ -7,8 +7,8 @@ const router = express.Router();
 
 router.post('/create', auth, async (req,res) => {
     try {
-        const { clientId, carId, mechanicId, items } = req.body;
-        const quote = await quoteUseCase.create({ clientId, carId, mechanicId, items });
+        const { carId, mechanicId, items } = req.body;
+        const quote = await quoteUseCase.create({ carId, mechanicId, items });
         res.json({
             success: true,
             data: { quote }, 

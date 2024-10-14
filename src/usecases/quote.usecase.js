@@ -1,26 +1,14 @@
+const OriginalQuote = require('../models/originalQuote.model');
 const Quote = require('../models/quote.model');
-const Client = require('../models/client.model');
+const RepairShopQuote = require('../models/repairShopQuote.model');
 const Car = require('../models/car.model');
 const RepairShop = require('../models/repairShop.model');
 const Mechanic = require('../models/mechanic.model');
 const createError = require('http-errors');
 
-
-
-async function create({ clientId, carId, mechanicId, items }) {
-
-    if (!clientId || !carId || !mechanicId || items.length === 0) {
-        throw createError(400, "Missing required data to create the quote.")
-    }
-
-    const client = await Client.findById(clientId).populate('cars');
-    if (!client) {
-        throw createError(404, "Client not found.");
-    }
-
-    const car = client.cars.find(car => car._id.toString() === carId);
-    if (!car) {
-        throw createError(404, "Car does not belong to the client.");
+async function create({ carId, mechanicId, items }) {
+    if (!carId || !mechanicId || !items || items.length === 0) {
+        throw createError(400, "Missing required data to create the quote.");
     }
 
     const mechanic = await Mechanic.findById(mechanicId);
@@ -28,143 +16,68 @@ async function create({ clientId, carId, mechanicId, items }) {
         throw createError(404, "Mechanic not found.");
     }
 
-    const repairShops = await RepairShop.find({ "address.zipCode": mechanic.address.zipCode });
-    if (!repairShops.length) {
-        throw createError(404, "No repair shops found for the mechanic's postal code. ");
+    const car = await Car.findById(carId);
+    if (!car) {
+        throw createError(404, "Car not found.");
     }
 
-    const newQuote = new Quote({
-        client: clientId,
+    const repairShops = await RepairShop.find({ "address.zipCode": mechanic.address.zipCode });
+    if (!repairShops.length) {
+        throw createError(404, "No repair shops found for the mechanic's postal code.");
+    }
+
+    const newOriginalQuote = new OriginalQuote({
         car: carId,
         mechanic: mechanicId,
-        items,
-        repairShops: repairShops.map(shop => shop._id),
-        status: "pending",
-        totalPrice: 0
+        items: items.map(item => ({
+            concept: item.concept,
+            quantity: item.quantity,
+        })),
+    });
+
+    const savedOriginalQuote = await newOriginalQuote.save();
+
+    const newQuote = new Quote({
+        originalQuote: savedOriginalQuote._id,
+        total: 0,
+        status: "initial",
     });
 
     const savedQuote = await newQuote.save();
 
-    client.quotes.push({
-        quoteId: savedQuote._id,
-        status: 'initial',
-        repairShopId: null
-    });
-    await client.save();
+    car.quotes.push(savedQuote._id);
+    await car.save();
 
-    for (const repairShop of repairShops) {
-        repairShop.quotes.push({
-            quoteId: savedQuote._id,
-            status: 'initial'
+    await Promise.all(repairShops.map(async (shop) => {
+        const newRepairShopQuote = new RepairShopQuote({
+            originalQuote: savedOriginalQuote._id,
+            repairShop: shop._id,
+            items: items.map(item => ({
+                concept: item.concept,
+                quantity: item.quantity,
+            })),
+            totalPrice: 0,
         });
-        await repairShop.save();
-    }
 
+        const savedRepairShopQuote = await newRepairShopQuote.save();
 
-    const populatedQuote = await savedQuote.populate([
-        { path: 'client', model: 'Client' },
-        { path: 'car', model: 'Car' },
-        { path: 'mechanic', model: 'Mechanic' }
-    ]);
+        shop.quotes.push(savedRepairShopQuote._id);
+        await shop.save();
 
-    return populatedQuote;
-
-}
-
-async function createQuoteVersionByRepairShop(quoteId, repairShopId, items) {
-    const originalQuote = await Quote.findById(quoteId);
-    if (!originalQuote) {
-        throw createError(404, "Original quote not found.");
-    }
-
-    const client = await Client.findById(originalQuote.client);
-    if (!client) {
-        throw createError(404, "Client not found.");
-    }
-
-    if (!originalQuote.repairShops.includes(repairShopId)) {
-        throw createError(403, "Repair shop is not authorized to create a version of this quote.");
-    }
-
-    const updatedItems = items.map(item => {
-        const originalItem = originalQuote.items.id(item._id);
-        if (!originalItem) {
-            throw createError(404, `Item with id ${item._id} not found in original quote.`);
-        }
-
-        return {
-            ...originalItem.toObject(),  
-            unitPrice: item.unitPrice,   
-            brand: item.brand,
-            itemTotalPrice: originalItem.quantity * item.unitPrice 
-        };
-    });
-
-    const newQuote = new Quote({
-        client: originalQuote.client,
-        car: originalQuote.car,
-        mechanic: originalQuote.mechanic,
-        repairShops: [repairShopId],
-        items: updatedItems,
-        totalPrice: updatedItems.reduce((total, item) => total + item.itemTotalPrice, 0),
-        status: 'quoted',
-        quotedByRepairShop: repairShopId
-    });
+        newQuote.repairShopQuotes.push(savedRepairShopQuote._id);
+    }));
 
     await newQuote.save();
 
-   client.quotes.push({
-    quoteId: newQuote._id,
-    status: 'reviewed',
-    repairShopId,
-   });
-   await client.save();
+    const populatedQuote = await savedOriginalQuote.populate([
+        { path: 'car', model: 'Car', select: 'brand model year version' },
+        { path: 'mechanic', model: 'Mechanic' },
+    ]);
 
-   const repairShop = await RepairShop.findById(repairShopId);
-   repairShop.quotes.push({
-    quoteId: newQuote._id,
-    status:'reviewed'
-   });
-   await repairShop.save()
-
-    return newQuote;
+    return populatedQuote;
 }
-
-async function getById(id) {
-    const quote = await Quote.findById(id)
-    .populate({
-        path: 'client',
-        model: 'Client'
-    })
-    .populate({
-        path: 'car',
-        model: 'Car'
-    })
-    .populate({
-        path: 'mechanic',
-        model: 'Mechanic'
-    })
-    .populate({
-        path: 'repairShops',
-        model: 'RepairShop'
-    })
-    .populate({
-        path: 'quotedByRepairShop',
-        model: 'RepairShop'
-    });
-    
-    if (!quote) {
-    throw createError(404, 'Quote not found')
-    }
-
-    return quote
-}
-
-
 
 
 module.exports = {
     create,
-    createQuoteVersionByRepairShop,
-    getById,
 };

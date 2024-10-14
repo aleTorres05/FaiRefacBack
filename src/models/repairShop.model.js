@@ -45,22 +45,6 @@ const addressSchema = new mongoose.Schema({
     },
 });
 
-const quoteStateSchema = new mongoose.Schema({
-    quoteId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Quote",
-        required: true,
-    },
-    status: {
-        type: String,
-        enum: ["initial", "reviewed", "paid", "rejected", "delivered"],
-        default: "initial",
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now,
-    }
-});
 
 const modelName = "RepairShop";
 
@@ -91,7 +75,10 @@ const schema = new mongoose.Schema({
         type: addressSchema,
         required: true,
     },
-    quotes: [quoteStateSchema]
+    quotes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'RepairShopQuote'
+    }],
 });
 
 schema.pre('save', setDefaultProfilePicture);

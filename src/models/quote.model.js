@@ -1,66 +1,33 @@
 const mongoose = require('mongoose');
 
-
-const QouteItemSchema = new mongoose.Schema({
-    concept: {
-        type: String,
-        required: true,
-    },
-    quantity: {
-        type: Number,
-        required: true,
-    },
-    unitPrice: {
-        type: Number,
-    },
-    itemTotalPrice: {
-        type: Number,
-    },
-    brand: {
-        type: String,
-    }
-});
-
 const modelName = "Quote"
 
 const schema = new mongoose.Schema({
-    client: {
+    originalQuote: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Client",
+        ref: "OriginalQuote", 
         required: true,
     },
-    car: {
+    repairShopQuotes: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Car",
-        required: true,
-    },
-    mechanic: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Mechanic",
-        required: true,
-    },
-    items: [QouteItemSchema],
-    repairShops: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "RepairShop",
+        ref: "RepairShopQuote", 
     }],
-    quotedByRepairShop: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'RepairShop',
+    total: {
+        type: Number,
+    },
+    paymentId: {
+        type: String,
     },
     status: {
         type: String,
-        enum: ["pending", "quoted", "paid", "rejected", "shipped", "delivered"],
-        default: "pending",
+        enum: ["initial", "paid", "rejected", "delivered"],
+        default: "initial",
     },
-    created_at: {
+    createdAt: {
         type: Date,
         default: Date.now,
-    },
-    totalPrice: {
-        type: Number,
-        default: 0,
     }
 });
+
 
 module.exports = mongoose.model(modelName, schema);
