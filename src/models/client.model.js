@@ -4,27 +4,6 @@ const setDefaultProfilePicture = require('../middlewares/profilePicture.middlewa
 
 const modelName = 'Client';
 
-const quoteStateSchema = new mongoose.Schema({
-    quoteId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Quote",
-        required: true,
-    },
-    status: {
-        type: String,
-        enum: ["initial", "reviewed", "paid", "rejected", "delivered"],
-        default: "initial",
-    },
-    repairShopId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "RepairShop"
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now,
-    }
-});
-
 const schema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -57,7 +36,6 @@ const schema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Car" 
     }],
-    quotes: [quoteStateSchema],
 });
 
 schema.pre('save', setDefaultProfilePicture);

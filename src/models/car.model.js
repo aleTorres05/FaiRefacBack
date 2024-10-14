@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const modelName = "Car"
 
 const schema = new mongoose.Schema({
@@ -35,7 +36,7 @@ const schema = new mongoose.Schema({
     },
     quotes: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Quote" 
+        ref: 'Quote'
     }],
     carPicture: {
         type: String,
@@ -49,5 +50,7 @@ const schema = new mongoose.Schema({
         default: "https://fairefac-assets.s3.us-east-2.amazonaws.com/FaiRefac-default-car-picture.png"
     },
 })
+
+
 
 module.exports = mongoose.model(modelName, schema);

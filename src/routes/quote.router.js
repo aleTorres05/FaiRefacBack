@@ -7,8 +7,8 @@ const router = express.Router();
 
 router.post('/create', auth, async (req,res) => {
     try {
-        const { clientId, carId, mechanicId, items } = req.body;
-        const quote = await quoteUseCase.create({ clientId, carId, mechanicId, items });
+        const { carId, mechanicId, items } = req.body;
+        const quote = await quoteUseCase.create({ carId, mechanicId, items });
         res.json({
             success: true,
             data: { quote }, 
@@ -18,25 +18,6 @@ router.post('/create', auth, async (req,res) => {
         res.json({
             success: false,
             error: error.message,
-        });
-    };
-});
-
-router.post('/:id/repairshops/:repairShopId', auth, async (req, res) => {
-    try {
-        const { id, repairShopId } = req.params;
-        const items = req.body.items;
-
-        const newQuote = await quoteUseCase.createQuoteVersionByRepairShop(id, repairShopId, items);
-        res.json({
-            success: true,
-            data: { quote: newQuote, },
-        });
-    } catch (error) {
-        res.status(error.status || 500);
-        res.json({
-            success: false,
-            message: error.message,
         });
     };
 });
