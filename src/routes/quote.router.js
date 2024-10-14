@@ -22,25 +22,6 @@ router.post('/create', auth, async (req,res) => {
     };
 });
 
-router.post('/:id/repairshops/:repairShopId', auth, async (req, res) => {
-    try {
-        const { id, repairShopId } = req.params;
-        const items = req.body.items;
-
-        const newQuote = await quoteUseCase.createQuoteVersionByRepairShop(id, repairShopId, items);
-        res.json({
-            success: true,
-            data: { quote: newQuote, },
-        });
-    } catch (error) {
-        res.status(error.status || 500);
-        res.json({
-            success: false,
-            message: error.message,
-        });
-    };
-});
-
 router.get('/:id', auth, async (req, res) => {
     try {
         const { id } = req.params;

@@ -1,4 +1,3 @@
-const OriginalQuote = require('../models/originalQuote.model');
 const Quote = require('../models/quote.model');
 const RepairShopQuote = require('../models/repairShopQuote.model');
 const Car = require('../models/car.model');
@@ -7,6 +6,7 @@ const Mechanic = require('../models/mechanic.model');
 const createError = require('http-errors');
 
 async function create({ carId, mechanicId, items }) {
+    
     if (!carId || !mechanicId || !items || items.length === 0) {
         throw createError(400, "Missing required data to create the quote.");
     }
@@ -26,19 +26,11 @@ async function create({ carId, mechanicId, items }) {
         throw createError(404, "No repair shops found for the mechanic's postal code.");
     }
 
-    const newOriginalQuote = new OriginalQuote({
-        car: carId,
-        mechanic: mechanicId,
+    const newQuote = new Quote({
         items: items.map(item => ({
             concept: item.concept,
             quantity: item.quantity,
         })),
-    });
-
-    const savedOriginalQuote = await newOriginalQuote.save();
-
-    const newQuote = new Quote({
-        originalQuote: savedOriginalQuote._id,
         total: 0,
         status: "initial",
     });
@@ -50,13 +42,15 @@ async function create({ carId, mechanicId, items }) {
 
     await Promise.all(repairShops.map(async (shop) => {
         const newRepairShopQuote = new RepairShopQuote({
-            originalQuote: savedOriginalQuote._id,
+            car: carId,
+            mechanic: mechanicId,
             repairShop: shop._id,
             items: items.map(item => ({
                 concept: item.concept,
                 quantity: item.quantity,
             })),
             totalPrice: 0,
+            status: "initial",
         });
 
         const savedRepairShopQuote = await newRepairShopQuote.save();
@@ -69,15 +63,37 @@ async function create({ carId, mechanicId, items }) {
 
     await newQuote.save();
 
-    const populatedQuote = await savedOriginalQuote.populate([
-        { path: 'car', model: 'Car', select: 'brand model year version' },
-        { path: 'mechanic', model: 'Mechanic' },
-    ]);
-
-    return populatedQuote;
+    return newQuote; 
 }
 
 
+async function getById(id) {
+    if (!id) {
+        throw createError(400, "Quote ID is required.");
+    }
+
+    const quote = await Quote.findById(id)
+        .populate({
+            path: 'repairShopQuotes',
+            populate: [
+                { path: 'repairShop', select: 'companyName phoneNumber address' }, 
+                {
+                    path: 'items', 
+                    model: 'RepairShopQuote',
+                    select: 'concept quantity unitPrice itemTotalPrice brand'
+                }
+            ]
+        });
+
+    
+    if (!quote) {
+        throw createError(404, "Quote not found.");
+    }
+
+    return quote;
+}
+
 module.exports = {
     create,
+    getById,
 };

@@ -3,11 +3,16 @@ const mongoose = require('mongoose');
 const modelName = "Quote"
 
 const schema = new mongoose.Schema({
-    originalQuote: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "OriginalQuote", 
-        required: true,
-    },
+    items: [{
+        concept: {
+            type: String,
+            required: true,
+        },
+        quantity: {
+            type: Number,
+            required: true,
+        }
+    }],
     repairShopQuotes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "RepairShopQuote", 
@@ -20,7 +25,7 @@ const schema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["initial", "paid", "rejected", "delivered"],
+        enum: ["initial", "modify", "paid", "rejected", "delivered"],
         default: "initial",
     },
     createdAt: {
@@ -28,6 +33,5 @@ const schema = new mongoose.Schema({
         default: Date.now,
     }
 });
-
 
 module.exports = mongoose.model(modelName, schema);

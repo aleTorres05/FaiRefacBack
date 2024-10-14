@@ -3,21 +3,29 @@ const mongoose = require('mongoose');
 const modelName = 'RepairShopQuote'
 
 const schema = new mongoose.Schema({
-    originalQuote: {
+    car: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "OriginalQuote", 
+        ref: "Car",
+        required: true,
+    },
+    mechanic: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Mechanic",
         required: true,
     },
     repairShop: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "RepairShop",
+        required: true,
     },
     items: [{
-        concept: { 
+        concept: {
             type: String,
+            required: true,
         },
         quantity: {
             type: Number,
+            required: true,
         },
         unitPrice: {
             type: Number,
@@ -31,6 +39,11 @@ const schema = new mongoose.Schema({
     }],
     totalPrice: {
         type: Number,
+    },
+    status: {
+        type: String,
+        enum: ["initial", "review", "modify", "paid", "rejected", "delivered"],
+        default: "initial",
     },
     createdAt: {
         type: Date,
