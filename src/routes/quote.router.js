@@ -5,7 +5,7 @@ const auth = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
-router.post('/create', auth, async (req,res) => {
+router.post('/create', async (req,res) => {
     try {
         const { carId, mechanicId, items } = req.body;
         const quote = await quoteUseCase.create({ carId, mechanicId, items });
