@@ -42,7 +42,7 @@ const schema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["initial", "review", "modify", "paid", "rejected", "delivered"],
+        enum: ["initial", "review", "select", "paid", "rejected", "delivered"],
         default: "initial",
     },
     createdAt: {
