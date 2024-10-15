@@ -144,4 +144,22 @@ router.post("/verify-otp", auth, async (req, res) => {
   }
 });
 
+router.delete("/:id", auth, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const userDeleted = await userUseCase.deleteById(id);
+    res.json({
+      success: true,
+      data: { user: userDeleted }
+    });
+  } catch (error) {
+    res.status(error.status || 500);
+    res.json({
+      success: false,
+      error: error.message,
+    });
+  };
+});
+
 module.exports = router;

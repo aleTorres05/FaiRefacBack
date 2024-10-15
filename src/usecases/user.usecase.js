@@ -203,6 +203,16 @@ async function verifyOTP(email, otp) {
   return;
 }
 
+async function deleteById(id) {
+  const userDeleted = await User.findByIdAndDelete(id)
+
+  if (!userDeleted) {
+    throw createError(404, "User not found.")
+  };
+
+  return userDeleted;
+}
+
 module.exports = {
   create,
   getById,
@@ -211,4 +221,5 @@ module.exports = {
   generateAndSendOTP,
   verifyOTP,
   getByEmail,
+  deleteById,
 };
