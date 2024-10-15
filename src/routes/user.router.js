@@ -5,7 +5,7 @@ const upload = require("../middlewares/upload.middleware");
 
 const router = express.Router();
 
-router.get("/:email", auth, async (req, res) => {
+router.get("/find-email/:email", auth, async (req, res) => {
   const { email } = req.params;
 
   try {
@@ -56,11 +56,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.patch(
-  "/:id/client",
-  auth,
-  upload.single("profilePicture"),
-  async (req, res) => {
+router.patch("/:id/client",auth, upload.single("profilePicture"), async (req, res) => {
     const { id } = req.params;
     const userId = req.user._id;
     const file = req.file;
@@ -86,11 +82,7 @@ router.patch(
   }
 );
 
-router.patch(
-  "/:id/repairShop",
-  auth,
-  upload.single("profilePicture"),
-  async (req, res) => {
+router.patch("/:id/repairShop", auth, upload.single("profilePicture"), async (req, res) => {
     const { id } = req.params;
     const userId = req.user._id;
     const file = req.file;

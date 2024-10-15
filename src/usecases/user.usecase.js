@@ -30,10 +30,24 @@ async function getByEmail(email) {
       populate: {
         path: "cars",
         model: "Car",
-      },
+        populate: {
+          path: "quotes", 
+          model: "Quote",
+        }
+      }
     });
   } else if (user.isRepairShop) {
-    user = await User.findOne({ email }).populate("repairShop");
+    user = await User.findOne({ email }).populate({
+      path: "repairShop",
+      populate: {
+        path: "quotes", 
+        model: "RepairShopQuote",
+        populate: [
+          { path: "car", model: "Car" }, 
+          { path: "mechanic", model: "Mechanic" }, 
+        ]
+      }
+    });
   }
 
   return user;
@@ -52,10 +66,24 @@ async function getById(id) {
       populate: {
         path: "cars",
         model: "Car",
-      },
+        populate: {
+          path: "quotes", 
+          model: "Quote",
+        }
+      }
     });
   } else if (user.isRepairShop) {
-    user = await User.findById(id).populate("repairShop");
+    user = await User.findById(id).populate({
+      path: "repairShop",
+      populate: {
+        path: "quotes", 
+        model: "RepairShopQuote",
+        populate: [
+          { path: "car", model: "Car" }, 
+          { path: "mechanic", model: "Mechanic" }, 
+        ]
+      }
+    });
   }
 
   return user;
@@ -98,13 +126,8 @@ async function updateByIdUserClient(id, clientData, userId, file = null) {
   return user;
 }
 
-async function updateByIdUserRepairShop(
-  id,
-  repairShopData,
-  userId,
-  file = null
-) {
-  let user = await User.findById(id);
+async function updateByIdUserRepairShop(id, repairShopData, userId, file = null) {
+  let user = await Us .findById(id);
 
   if (!user) {
     throw createError(404, "User not found");
