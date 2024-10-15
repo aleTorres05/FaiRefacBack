@@ -93,7 +93,26 @@ async function getById(id) {
     return quote;
 }
 
+async function calculateTotalById(id) {
+    const quote = await Quote.findById(id).populate('repairShopQuotes')
+    if (!quote) {
+        throw createError(404, "Quote not found")
+    }
+
+    const total = quote.repairShopQuotes.reduce((sum, repairShopQuote) => {
+        return sum + (repairShopQuote.totalPrice || 0);
+    }, 0);
+
+    quote.total = total
+
+    await quote.save();
+
+    return quote;
+
+}
+
 module.exports = {
     create,
     getById,
+    calculateTotalById,
 };
