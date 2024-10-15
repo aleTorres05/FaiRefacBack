@@ -2,6 +2,7 @@ const createError = require('http-errors');
 const RepairShopQuote = require('../models/repairShopQuote.model');
 const Quote = require('../models/quote.model');
 const { default: mongoose } = require('mongoose');
+const { findById } = require('../models/user.model');
 
 
 async function updateById(id, repairShopId, updatedItems) {
@@ -57,7 +58,20 @@ async function updateById(id, repairShopId, updatedItems) {
     }
 }
 
+async function getById(id) {
+    const repairShopQuote = RepairShopQuote.findById(id)
+    .populate('car')
+    .populate('mechanic')
+    .populate('repairShop')
+
+    if(!repairShopQuote) {
+        throw createError (404, "Quote not found.")
+    }
+
+    return repairShopQuote
+}
 
 module.exports = {
     updateById,
+    getById,
 }

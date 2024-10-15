@@ -31,16 +31,23 @@ async function associateCarWithClient(clientId, carData, file = null) {
 async function getById(id) {
     const client = await Client.findById(id)
         .populate({
-            path: 'cars', 
-            model: 'Car'
-        })
-        .populate({
-            path: 'quotes.quoteId', 
-            model: 'Quote',
-        })
-        .populate({
-            path: 'quotes.repairShopId', 
-            model: 'RepairShop',
+            path: 'cars',
+            model: 'Car',
+            populate: [
+                {
+                    path: 'quotes',
+                    model: 'Quote',
+                    populate: {
+                        path: 'repairShopQuotes',
+                        model: 'RepairShopQuote',
+                        populate: [
+                            { path: 'car', model: 'Car' },
+                            { path: 'mechanic', model: 'Mechanic' },
+                            { path: 'repairShop', model: 'RepairShop' }
+                        ]
+                    }
+                }
+            ]
         });
 
     if (!client) {
