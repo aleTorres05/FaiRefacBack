@@ -1,5 +1,6 @@
 const cors = require('cors');
 const express = require('express');
+const path = require('path')
 
 // routers
 const authRouter = require('./routes/auth.router');
@@ -27,10 +28,8 @@ app.use('/repairshop', repairShopRouter);
 app.use('/repairshop-quote', repairShopQuoteRouter);
 app.use('/car', carRouter);
 
-app.get('/',(req, res) => {
-    res.json({
-        message: "FaiRefac APIv1"
-    });
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
 
 module.exports = app;
