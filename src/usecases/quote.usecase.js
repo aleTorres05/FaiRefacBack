@@ -5,7 +5,7 @@ const RepairShop = require('../models/repairShop.model');
 const Mechanic = require('../models/mechanic.model');
 const createError = require('http-errors');
 
-async function create({ carId, mechanicId, items }) {
+async function create( carId, mechanicId, items ) {
     
     if (!carId || !mechanicId || !items || items.length === 0) {
         throw createError(400, "Missing required data to create the quote.");
@@ -111,8 +111,46 @@ async function calculateTotalById(id) {
 
 }
 
+async function rejectRepairShopQuoteById(id, repairShopQuoteId) {
+    const quote = await Quote.findById(id);
+
+    if (!quote) {
+        throw createError(404, "Quote not found");
+    };
+
+    const repairShopQuote = quote.repairShopQuotes.find(
+        (quote) => quote._id.toString() === repairShopQuoteId.toString()
+    )
+
+    if (!repairShopQuote) {
+        throw createError(404, "RepairShopQuote does not belong to this quote")
+    }
+
+    repairShopQuote.status = "rejected";
+
+    quote.repairShopQuotes = quote.repairShopQuotes.filter(
+        (quote) => quote._id.toString() !== repairShopQuoteId.toString()
+    );
+
+    await RepairShopQuote.findByIdAndUpdate(repairShopQuoteId, { status: "rejected"});
+    await quote.save();
+
+    return quote.populate({
+        path: 'repairShopQuotes',
+        populate: [
+            { path: 'repairShop', select: 'companyName phoneNumber address' }, 
+            {
+                path: 'items', 
+                model: 'RepairShopQuote',
+                select: 'concept quantity unitPrice itemTotalPrice brand'
+            }
+        ]
+    });
+}
+
 module.exports = {
     create,
     getById,
     calculateTotalById,
+    rejectRepairShopQuoteById,
 };
