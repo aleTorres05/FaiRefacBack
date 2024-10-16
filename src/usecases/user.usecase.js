@@ -97,7 +97,7 @@ async function updateByIdUserClient(id, clientData, userId, file = null) {
   }
 
   if (user._id.toString() !== userId.toString()) {
-    throw createError(403, "Unauthorized to update this info");
+    throw createError(401, "Unauthorized to update this info");
   }
 
   if (user.client) {
@@ -134,7 +134,7 @@ async function updateByIdUserRepairShop(id, repairShopData, userId, file = null)
   }
 
   if (user._id.toString() !== userId.toString()) {
-    throw createError(403, "Unauthorized to update this info");
+    throw createError(401, "Unauthorized to update this info");
   }
 
   if (user.repairShop) {

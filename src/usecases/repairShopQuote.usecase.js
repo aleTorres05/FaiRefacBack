@@ -1,10 +1,14 @@
 const createError = require('http-errors');
+const Client = require('../models/client.model')
 const RepairShopQuote = require('../models/repairShopQuote.model');
 const { default: mongoose } = require('mongoose');
 
 
 
 async function updateById(id, repairShopId, updatedItems) {
+    if (!Array.isArray(updatedItems)) {
+        throw createError(400, "Invalid input. Expected an array of items.");
+    }
     const session = await mongoose.startSession();
     session.startTransaction() 
 
@@ -27,10 +31,14 @@ async function updateById(id, repairShopId, updatedItems) {
         let totalPrice = 0;
         repairShopQuote.items = repairShopQuote.items.map(item => {
             const updatedItem = updatedItems.find(i => i._id === item._id.toString());
+
+            if (!updatedItem) {
+                throw createError(405, "Item does not belong to the quote.")
+            }
     
             if (updatedItem) {
                 item.unitPrice = updatedItem.unitPrice;
-                item.quantity = updatedItem.quantity;
+                item.quantity = updatedItem.quantity || item.quantity;
                 item.brand = updatedItem.brand;
     
                 item.itemTotalPrice = item.unitPrice * item.quantity;
@@ -70,7 +78,37 @@ async function getById(id) {
     return repairShopQuote
 }
 
+async function deleteItemById(id, clientId, itemId) {
+    const client = await Client.findById(clientId)
+    if (!client) {
+        throw createError(404, "Client not found.")
+    }
+    const repairShopQuote = await RepairShopQuote.findById(id);
+    if (!repairShopQuote) {
+        throw createError(404, "Quote not found.")
+    }
+
+    const isCarInClient = client.cars.some(carId => carId.toString() === repairShopQuote.car.toString());
+    if (!isCarInClient) {
+        throw createError(401, "Unauthorized to update this quote.")
+    }
+
+    const updateRepairShopQuote =  await RepairShopQuote.findByIdAndUpdate( id,
+        {
+            $pull: {items: {_id: new mongoose.Types.ObjectId(itemId) }}
+        },
+        { new: true }
+    );
+    if (!updateRepairShopQuote) {
+        throw createError(405, "Item does not belong to the quote.")
+    }
+
+    return updateRepairShopQuote
+}
+
+
 module.exports = {
     updateById,
     getById,
+    deleteItemById,
 }
