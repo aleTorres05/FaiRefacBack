@@ -108,7 +108,7 @@ router.patch("/:id/repairShop", auth, upload.single("profilePicture"), async (re
   }
 );
 
-router.post("/send-otp", auth, async (req, res) => {
+router.post("/send-otp", async (req, res) => {
   const { email } = req.body;
 
   try {
@@ -126,7 +126,7 @@ router.post("/send-otp", auth, async (req, res) => {
   }
 });
 
-router.post("/verify-otp", auth, async (req, res) => {
+router.post("/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
 
   try {

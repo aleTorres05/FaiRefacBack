@@ -1,8 +1,10 @@
 const Quote = require('../models/quote.model');
 const RepairShopQuote = require('../models/repairShopQuote.model');
+const Client = require('../models/client.model');
 const Car = require('../models/car.model');
 const RepairShop = require('../models/repairShop.model');
 const Mechanic = require('../models/mechanic.model');
+const stripe = require('stripe')(process.env.STRIPE_PRIVATE_KEY);
 const createError = require('http-errors');
 
 async function create( carId, mechanicId, items ) {
@@ -135,7 +137,9 @@ async function rejectRepairShopQuoteById(id, repairShopQuoteId) {
     await RepairShopQuote.findByIdAndUpdate(repairShopQuoteId, { status: "rejected"});
     await quote.save();
 
-    return quote.populate({
+    const calculateQuote = await calculateTotalById(id)
+
+    return calculateQuote.populate({
         path: 'repairShopQuotes',
         populate: [
             { path: 'repairShop', select: 'companyName phoneNumber address' }, 
@@ -148,9 +152,43 @@ async function rejectRepairShopQuoteById(id, repairShopQuoteId) {
     });
 }
 
+async function createCheckoutSession(id, clientId) {
+    const client = await Client.findById(clientId).populate('cars')
+    const isQuoteInCar = client.cars.some(quoteId => quoteId === id);
+
+    if (!isQuoteInCar) {
+        createError(401, "Unauthorized to pay this quote");
+    }
+
+    const quote = await calculateTotalById(id);
+
+    if (!quote) {
+        createError(404, "Quote not found.")
+    }
+
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{
+            price_data: {
+                currency: 'mxn',
+                product_data: {
+                    name: `Refacciones para ${isQuoteInCar.brand} ${isQuoteInCar.model}`
+                },
+                unit_amount: quote.total * 100,
+            },
+            quantity: 1,
+        }],
+        mode: 'payment',
+        success_url: `${process.env.URL_DOMAIN}/succes?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.URL_DOMAIN}/cancel`
+    })
+    return session;
+};
+
 module.exports = {
     create,
     getById,
     calculateTotalById,
     rejectRepairShopQuoteById,
+    createCheckoutSession,
 };
