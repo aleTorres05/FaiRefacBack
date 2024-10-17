@@ -4,7 +4,7 @@ const Client = require('../models/client.model');
 const Car = require('../models/car.model');
 const RepairShop = require('../models/repairShop.model');
 const Mechanic = require('../models/mechanic.model');
-const stripe = require('stripe')(process.env.STRIPE_PRIVATE_KEY);
+// const stripe = require('stripe')(process.env.STRIPE_PRIVATE_KEY);
 const createError = require('http-errors');
 
 async function create( carId, mechanicId, items ) {
@@ -152,7 +152,7 @@ async function rejectRepairShopQuoteById(id, repairShopQuoteId) {
     });
 }
 
-async function createCheckoutSession(id, clientId) {
+/*async function createCheckoutSession(id, clientId) {
     const client = await Client.findById(clientId).populate('cars')
     const isQuoteInCar = client.cars.some(quoteId => quoteId === id);
 
@@ -183,12 +183,12 @@ async function createCheckoutSession(id, clientId) {
         cancel_url: `${process.env.URL_DOMAIN}/cancel`
     })
     return session;
-};
+};*/
 
 module.exports = {
     create,
     getById,
     calculateTotalById,
     rejectRepairShopQuoteById,
-    createCheckoutSession,
+    
 };
