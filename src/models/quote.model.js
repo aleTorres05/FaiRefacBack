@@ -23,6 +23,9 @@ const schema = new mongoose.Schema({
     paymentId: {
         type: String,
     },
+    sessionId: {
+        type: String,
+    },
     status: {
         type: String,
         enum: ["initial", "modify", "paid", "rejected", "delivered"],

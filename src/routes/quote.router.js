@@ -79,4 +79,38 @@ router.patch('/:id/reject/:repairShopQuoteId', auth, async ( req, res) => {
     };
 });
 
+
+router.post('/:id/create-checkout-session', auth, async (req, res) => {
+    try {
+        const session = await quoteUseCase.createCheckoutSession(req.params.id);
+        res.json({
+            success: true,
+            data: { session }
+        });
+    } catch (error) {
+        res.status(error.status || 500);
+        res.json({
+            success: false,
+            error: error.message,
+        })
+    }
+})
+
+router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) =>{
+    try {
+        const result = await quoteUseCase.handleStripeEvent(req);
+        res.json({
+            success: true,
+            data: { result }
+        });
+    } catch (error) {
+        res.status(error.status || 500);
+        res.json({
+            success: false,
+            error: error.message,
+        })
+    }
+});
+
+
 module.exports = router;
