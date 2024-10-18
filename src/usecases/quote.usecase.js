@@ -6,7 +6,6 @@ const Mechanic = require('../models/mechanic.model');
 const stripe = require('stripe')(process.env.STRIPE_PRIVATE_KEY);
 const createError = require('http-errors');
 
-const endpointSecret = process.env.STRIPE_ENDPOINT_SECRET;
 
 async function create( carId, mechanicId, items ) {
     
@@ -174,8 +173,8 @@ async function createCheckoutSession(id) {
             quantity: 1,
         }],
         mode: 'payment',
-        success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.CLIENT_URL}/cancel`,
+        success_url: `${process.env.BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.BASE_URL}/cancel`,
     });
 
     quote.sessionId = session.id;
@@ -186,17 +185,21 @@ async function createCheckoutSession(id) {
 
 async function handleStripeEvent(req) {
     const sig = req.headers['stripe-signature'];
+    
+
     let event;
 
     try {
-        event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+
+        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_ENDPOINT_SECRET);
+
     } catch (error) {
-        throw new Error(`Webhook Error: ${error.message}`);
+        throw createError(500, `Webhook Error: ${error.message}`);
     }
 
-    
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
+        console.log("Checkout session completed for session:", session);
 
         const quote = await Quote.findOne({ sessionId: session.id }).populate('repairShopQuotes');
 
@@ -208,7 +211,9 @@ async function handleStripeEvent(req) {
                 const repairShopQuote = await RepairShopQuote.findById(repairShopQuoteId);
                 if (repairShopQuote) {
                     repairShopQuote.status = 'paid';
-                    await repairShopQuote.save(); 
+                    return await repairShopQuote.save(); 
+                } else {
+                    console.log('RepairShopQuote not found for session.id:', session.id);
                 }
             });
 
@@ -223,6 +228,7 @@ async function handleStripeEvent(req) {
 
     return { success: true, message: 'Event handled' };
 }
+
 
 
 

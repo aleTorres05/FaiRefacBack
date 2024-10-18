@@ -96,7 +96,9 @@ router.post('/:id/create-checkout-session', auth, async (req, res) => {
     }
 })
 
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) =>{
+
+
+router.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =>{
     try {
         const result = await quoteUseCase.handleStripeEvent(req);
         res.json({
@@ -104,6 +106,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             data: { result }
         });
     } catch (error) {
+        console.error('Error handling Stripe event:', error);
         res.status(error.status || 500);
         res.json({
             success: false,
