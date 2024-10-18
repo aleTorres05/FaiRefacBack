@@ -26,6 +26,9 @@ const schema = new mongoose.Schema({
     sessionId: {
         type: String,
     },
+    ticketUrl: {
+        type: String
+    },
     status: {
         type: String,
         enum: ["initial", "modify", "paid", "rejected", "delivered"],

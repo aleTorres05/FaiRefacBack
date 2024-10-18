@@ -205,7 +205,8 @@ async function handleStripeEvent(req) {
 
         if (quote) {
             quote.status = 'paid';
-            quote.paymentId = session.payment_intent; 
+            quote.paymentId = session.payment_intent;
+            quote.ticketUrl = session.receipt_url; 
 
             const updateRepairShopQuotes = quote.repairShopQuotes.map(async (repairShopQuoteId) => {
                 const repairShopQuote = await RepairShopQuote.findById(repairShopQuoteId);
