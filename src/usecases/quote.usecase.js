@@ -1,11 +1,11 @@
 const Quote = require('../models/quote.model');
 const RepairShopQuote = require('../models/repairShopQuote.model');
-const Client = require('../models/client.model');
 const Car = require('../models/car.model');
 const RepairShop = require('../models/repairShop.model');
 const Mechanic = require('../models/mechanic.model');
-// const stripe = require('stripe')(process.env.STRIPE_PRIVATE_KEY);
+const stripe = require('stripe')(process.env.STRIPE_PRIVATE_KEY);
 const createError = require('http-errors');
+
 
 async function create( carId, mechanicId, items ) {
     
@@ -152,18 +152,12 @@ async function rejectRepairShopQuoteById(id, repairShopQuoteId) {
     });
 }
 
-/*async function createCheckoutSession(id, clientId) {
-    const client = await Client.findById(clientId).populate('cars')
-    const isQuoteInCar = client.cars.some(quoteId => quoteId === id);
-
-    if (!isQuoteInCar) {
-        createError(401, "Unauthorized to pay this quote");
-    }
-
+async function createCheckoutSession(id) {
+    
     const quote = await calculateTotalById(id);
 
-    if (!quote) {
-        createError(404, "Quote not found.")
+    if (!quote.total || quote.total <= 0) {
+        throw createError(400, "Quote total must be greater than zero");
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -172,23 +166,79 @@ async function rejectRepairShopQuoteById(id, repairShopQuoteId) {
             price_data: {
                 currency: 'mxn',
                 product_data: {
-                    name: `Refacciones para ${isQuoteInCar.brand} ${isQuoteInCar.model}`
+                    name: 'Cotización de refacciones',
                 },
-                unit_amount: quote.total * 100,
+                unit_amount: Math.round(quote.total * 100),
             },
             quantity: 1,
         }],
         mode: 'payment',
-        success_url: `${process.env.URL_DOMAIN}/succes?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.URL_DOMAIN}/cancel`
-    })
+        success_url: `${process.env.BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.BASE_URL}/cancel`,
+    });
+
+    quote.sessionId = session.id;
+    await quote.save();
+
     return session;
-};*/
+};
+
+async function handleStripeEvent(req) {
+    const sig = req.headers['stripe-signature'];
+    
+
+    let event;
+
+    try {
+
+        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_ENDPOINT_SECRET);
+
+    } catch (error) {
+        throw createError(500, `Webhook Error: ${error.message}`);
+    }
+
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        console.log("Checkout session completed for session:", session);
+
+        const quote = await Quote.findOne({ sessionId: session.id }).populate('repairShopQuotes');
+
+        if (quote) {
+            quote.status = 'paid';
+            quote.paymentId = session.payment_intent;
+            quote.ticketUrl = session.receipt_url; 
+
+            const updateRepairShopQuotes = quote.repairShopQuotes.map(async (repairShopQuoteId) => {
+                const repairShopQuote = await RepairShopQuote.findById(repairShopQuoteId);
+                if (repairShopQuote) {
+                    repairShopQuote.status = 'paid';
+                    return await repairShopQuote.save(); 
+                } else {
+                    console.log('RepairShopQuote not found for session.id:', session.id);
+                }
+            });
+
+            await Promise.all(updateRepairShopQuotes);
+            await quote.save(); 
+
+            console.log(`Quote ${quote._id} and associated RepairShopQuotes marked as paid.`);
+        } else {
+            console.log('Quote not found for session.id:', session.id);
+        }
+    }
+
+    return { success: true, message: 'Event handled' };
+}
+
+
+
+
 
 module.exports = {
     create,
     getById,
     calculateTotalById,
     rejectRepairShopQuoteById,
-    
+    createCheckoutSession,
+    handleStripeEvent,
 };

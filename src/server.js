@@ -12,11 +12,18 @@ const repairShopRouter = require('./routes/repairShop.router');
 const repairShopQuoteRouter = require('./routes/repairShopQuote.router')
 const carRouter = require('./routes/car.router');
 
+
 const app = express();
 
 //middlewares
 app.use(cors());
-app.use(express.json());
+app.use((req, res, next) => {
+    if (req.originalUrl === '/quote/webhook') {
+        next(); 
+    } else {
+        express.json()(req, res, next); 
+    }
+});
 
 //app.use(/routers, router)
 app.use('/auth', authRouter);
