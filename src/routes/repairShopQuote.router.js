@@ -5,18 +5,11 @@ const validateUserType = require('../middlewares/validateUserType.middleware');
 
 const router = express.Router();
 
-router.patch('/:id/update', auth, async (req, res) => {
+router.patch('/:id/update', auth, validateUserType('repairShop'), async (req, res) => {
     const { id } = req.params
     const updatedItems = req.body;
-    
-    if (!req.user || !req.user.repairShop || !req.user.repairShop._id) {
-        return res.status(400).json({
-            success: false,
-            error: 'Unauthorized: repair shop information is missing or incomplete.',
-        });
-    }
-
     const repairShopId = req.user.repairShop._id
+
     try {
         const updatedQuote = await repairShopQuoteUseCase.updateById(id, repairShopId, updatedItems);
         res.json({
@@ -34,8 +27,9 @@ router.patch('/:id/update', auth, async (req, res) => {
 
 router.get('/:id', auth, async (req, res) => {
     const { id } = req.params;
+    const user = req.user;
     try {
-        const repairShopQuote = await repairShopQuoteUseCase.getById(id);
+        const repairShopQuote = await repairShopQuoteUseCase.getById(id, user);
         res.json({
             success:true, 
             data: { quote: repairShopQuote },
@@ -49,15 +43,8 @@ router.get('/:id', auth, async (req, res) => {
     };
 });
 
-router.patch('/:id/delete-item/:itemId', auth, async ( req, res ) => {
+router.patch('/:id/delete-item/:itemId', auth, validateUserType('client'), async ( req, res ) => {
     const { id, itemId } = req.params
-
-    if (!req.user || !req.user.client || !req.user.client._id) {
-        return res.status(400).json({
-            success: false,
-            error: 'Unauthorized: client information is missing or incomplete.',
-        });
-    }
     const clientId = req.user.client._id
 
     try {

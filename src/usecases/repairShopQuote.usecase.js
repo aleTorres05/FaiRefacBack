@@ -65,23 +65,45 @@ async function updateById(id, repairShopId, updatedItems) {
     }
 }
 
-async function getById(id) {
-
+async function getById(id, user) {
     if (!id) {
-        createError (400, "Missing require data to get the info")
-    };
-
-    const repairShopQuote = RepairShopQuote.findById(id)
-    .populate('car')
-    .populate('mechanic')
-    .populate('repairShop')
-
-    if(!repairShopQuote) {
-        throw createError (404, "Quote not found.")
+        throw createError(400, "Missing required data to get the info");
     }
 
-    return repairShopQuote
+    if ((user.isClient && !user.client) || (user.isRepairShop && !user.repairShop)) {
+        throw createError(403, "User does not have the necessary info to get this quote.");
+    }
+    
+    const repairShopQuote = await RepairShopQuote.findById(id)
+        .populate('car')
+        .populate('mechanic')
+        .populate('repairShop');
+
+    if (!repairShopQuote) {
+        throw createError(404, "Quote not found.");
+    }
+
+    if (!repairShopQuote.car) {
+        throw createError(400, "No car associated with this quote.");
+    }
+    if (!repairShopQuote.repairShop) {
+        throw createError(400, "No repair shop associated with this quote.");
+    }
+
+    const quotedCarId = repairShopQuote.car?._id.toString();
+    const repairShopId = repairShopQuote.repairShop?._id.toString(); 
+
+    if (user.isClient && !user.client.cars.some(carId => carId.toString() === quotedCarId)) {
+        throw createError(403, "You are not authorized to view this quote.");
+    }
+
+    if (user.isRepairShop && user.repairShop._id.toString() !== repairShopId) {
+        throw createError(403, "You are not authorized to view this quote.");
+    }
+
+    return repairShopQuote;
 }
+
 
 async function deleteItemById(id, clientId, itemId) {
     if (!id || !clientId || itemId) {
