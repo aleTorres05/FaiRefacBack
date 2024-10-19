@@ -1,6 +1,7 @@
 const express = require('express');
 const repairShopQuoteUseCase = require('../usecases/repairShopQuote.usecase');
 const auth = require('../middlewares/auth.middleware');
+const validateUserType = require('../middlewares/validateUserType.middleware');
 
 const router = express.Router();
 
@@ -74,21 +75,9 @@ router.patch('/:id/delete-item/:itemId', auth, async ( req, res ) => {
     };
 });
 
-router.patch('/:id/change-status', auth, async ( req, res) => {
+router.patch('/:id/change-status', auth, validateUserType('repairShop'), async ( req, res) => {
     const { id } = req.params;
-
-    if (!req.user || !req.user.repairShop || !req.user.repairShop._id) {
-        return res.status(400).json({
-            success: false,
-            error: 'Unauthorized: repair shop information is missing or incomplete.',
-        });
-    }
-
     const repairShopId = req.user.repairShop._id;
-
-    if (!repairShopId) {
-        
-    }
 
     try {
         const updateRepairShopQuote = await repairShopQuoteUseCase.changeStatusById(id, repairShopId);
