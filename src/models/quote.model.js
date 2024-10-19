@@ -31,7 +31,7 @@ const schema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["initial", "modify", "paid", "rejected", "delivered"],
+        enum: ["initial", "modify", "paid", "rejected", "sent", "delivered"],
         default: "initial",
     },
     createdAt: {
