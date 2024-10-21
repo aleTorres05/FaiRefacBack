@@ -15,7 +15,7 @@ async function login(email, password) {
     }
     
     if (!user.verifiedEmail) {
-        throw createError(400, "Verify your email to continue." )
+        throw createError(400, "Verify your email to login." )
     }
     const token = jwt.sign({id: user._id})
     return token;

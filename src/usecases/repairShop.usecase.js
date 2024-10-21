@@ -3,7 +3,13 @@ const RepairShop = require('../models/repairShop.model');
 
 
 
-async function getById(id) {
+async function getById(id, repairShopId) {
+
+    
+    if (id.toString() != repairShopId.toString()) {
+       throw createError (403, "Unauthorized to get the repair shop info.")
+    }
+
     const repairShop = await RepairShop.findById(id)
         .populate({
             path: 'quotes',
