@@ -6,8 +6,8 @@ const RepairShop = require('../models/repairShop.model');
 async function getById(id, repairShopId) {
 
     
-    if (id.toString() != repairShopId.toString()) {
-       throw createError (403, "Unauthorized to get the repair shop info.")
+    if (id.toString() !== repairShopId.toString()) {
+       throw createError (403, "Unauthorized to get the info.")
     }
 
     const repairShop = await RepairShop.findById(id)

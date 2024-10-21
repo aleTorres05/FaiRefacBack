@@ -17,11 +17,15 @@ async function create(userData) {
   return newUser;
 }
 
-async function getByEmail(email) {
+async function getByEmail(email, userId) {
   let user = await User.findOne({ email });
 
   if (!user) {
     throw createError(404, "User not found");
+  }
+
+  if (user._id.toString() !== userId.toString()) {
+    throw createError(403, "Unauthorized to get the info.")
   }
 
   if (user.isClient) {
@@ -54,6 +58,7 @@ async function getByEmail(email) {
 }
 
 async function getById(id) {
+
   let user = await User.findById(id);
 
   if (!user) {
@@ -97,7 +102,7 @@ async function updateByIdUserClient(id, clientData, userId, file = null) {
   }
 
   if (user._id.toString() !== userId.toString()) {
-    throw createError(401, "Unauthorized to update this info");
+    throw createError(403, "Unauthorized to update this info");
   }
 
   if (user.client) {
@@ -134,7 +139,7 @@ async function updateByIdUserRepairShop(id, repairShopData, userId, file = null)
   }
 
   if (user._id.toString() !== userId.toString()) {
-    throw createError(401, "Unauthorized to update this info");
+    throw createError(403, "Unauthorized to update this info");
   }
 
   if (user.repairShop) {
@@ -203,7 +208,10 @@ async function verifyOTP(email, otp) {
   return;
 }
 
-async function deleteById(id) {
+async function deleteById(id, userId) {
+  if (id.toString() !== userId.toString()) {
+    throw createError(403, "Unauthorized to delete this user.")
+  }
   const userDeleted = await User.findByIdAndDelete(id)
 
   if (!userDeleted) {
