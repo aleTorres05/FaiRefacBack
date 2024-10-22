@@ -1,6 +1,5 @@
 const express = require('express');
 const repairShopQuoteUseCase = require('../usecases/repairShopQuote.usecase');
-const { calculateTotalById } = require('../usecases/quote.usecase')
 const auth = require('../middlewares/auth.middleware');
 const validateUserType = require('../middlewares/validateUserType.middleware');
 
@@ -44,7 +43,7 @@ router.get('/:id', auth, async (req, res) => {
     };
 });
 
-router.patch('/:id/delete-item/:itemId', auth, validateUserType('client'), async ( req, res ) => {
+router.delete('/:id/delete-item/:itemId', auth, validateUserType('client'), async ( req, res ) => {
     const { id, itemId } = req.params
     const clientId = req.user.client._id
 

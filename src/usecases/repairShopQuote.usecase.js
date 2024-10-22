@@ -1,6 +1,8 @@
 const createError = require('http-errors');
 const Client = require('../models/client.model')
 const RepairShopQuote = require('../models/repairShopQuote.model');
+const Quote = require('../models/quote.model');
+const { calculateTotalById } = require('../usecases/quote.usecase')
 const { default: mongoose } = require('mongoose');
 
 
@@ -115,24 +117,33 @@ async function deleteItemById(id, clientId, itemId) {
     }
     const repairShopQuote = await RepairShopQuote.findById(id);
     if (!repairShopQuote) {
-        throw createError(404, "Quote not found.")
+        throw createError(404, "Repair shop quote not found.")
     }
+    
+    const quote = await Quote.findOne({ repairShopQuotes: id });
+    if (!quote) {
+        throw createError(404, "Quote not found.")
+    };
 
     const isCarInClient = client.cars.some(carId => carId.toString() === repairShopQuote.car.toString());
     if (!isCarInClient) {
-        throw createError(401, "Unauthorized to update this quote.")
+        throw createError(403, "Unauthorized to update this quote.")
     }
-
+    
     const updateRepairShopQuote =  await RepairShopQuote.findByIdAndUpdate( id,
         {
             $pull: {items: {_id: new mongoose.Types.ObjectId(itemId) }}
         },
         { new: true }
     );
+    
     if (!updateRepairShopQuote) {
         throw createError(405, "Item does not belong to the quote.")
     }
-
+    
+    
+    const calculateTotal = await calculateTotalById(quote._id);
+    
     return updateRepairShopQuote
 }
 
