@@ -1,4 +1,5 @@
 const Quote = require('../models/quote.model');
+const Client = require('../models/client.model')
 const RepairShopQuote = require('../models/repairShopQuote.model');
 const Car = require('../models/car.model');
 const RepairShop = require('../models/repairShop.model');
@@ -69,9 +70,20 @@ async function create( carId, mechanicId, items ) {
 }
 
 
-async function getById(id) {
-    if (!id) {
-        throw createError(400, "Quote ID is required.");
+async function getById(id, clientId) {
+   const car = await Car.findOne({quotes: id});
+   if (!car) { 
+        throw createError(404, "Car not found.");
+    }
+
+    const client = await Client.findOne({cars: car._id});
+
+    if (!client) {
+        throw createError(404, "Client not found.")
+    }
+
+    if(client._id.toString() !== clientId.toString()) {
+        throw createError(403, "Unauthorized to get this info.")
     }
 
     const quote = await Quote.findById(id)
@@ -99,13 +111,27 @@ async function calculateTotalById(id) {
     const quote = await Quote.findById(id).populate('repairShopQuotes')
     if (!quote) {
         throw createError(404, "Quote not found")
-    }
+    };
+
+    if (quote.repairShopQuotes.length === 0) {
+
+        quote.total = 0;
+        quote.totalFaiRefacFee= 0;
+        quote.fee = 0
+        quote.status = 'rejected';
+
+    } else {
 
     const total = quote.repairShopQuotes.reduce((sum, repairShopQuote) => {
         return sum + (repairShopQuote.totalPrice || 0);
     }, 0);
 
     quote.total = total
+    quote.totalFaiRefacFee = parseFloat((total * 1.05.toFixed(2)));
+    quote.fee = quote.totalFaiRefacFee - total;
+
+    };
+
 
     await quote.save();
 
@@ -113,7 +139,23 @@ async function calculateTotalById(id) {
 
 }
 
-async function rejectRepairShopQuoteById(id, repairShopQuoteId) {
+async function rejectRepairShopQuoteById(id, repairShopQuoteId, clientId) {
+    const car = await Car.findOne({quotes: id});
+    
+    if (!car) { 
+        throw createError(404, "Car not found.");
+    }
+
+    const client = await Client.findOne({cars: car._id});
+
+    if (!client) {
+        throw createError(404, "Client not found.")
+    }
+
+    if(client._id.toString() !== clientId.toString()) {
+        throw createError(403, "Unauthorized to reject this quote.")
+    }
+
     const quote = await Quote.findById(id);
 
     if (!quote) {
@@ -152,8 +194,23 @@ async function rejectRepairShopQuoteById(id, repairShopQuoteId) {
     });
 }
 
-async function createCheckoutSession(id) {
+async function createCheckoutSession(id, clientId) {
+    const car = await Car.findOne({quotes: id});
     
+    if (!car) { 
+        throw createError(404, "Car not found.");
+    }
+
+    const client = await Client.findOne({cars: car._id});
+
+    if (!client) {
+        throw createError(404, "Client not found.")
+    }
+
+    if(client._id.toString() !== clientId.toString()) {
+        throw createError(403, "Unauthorized to create a pay session.")
+    }
+
     const quote = await calculateTotalById(id);
 
     if (!quote.total || quote.total <= 0) {
@@ -168,7 +225,7 @@ async function createCheckoutSession(id) {
                 product_data: {
                     name: 'Cotización de refacciones',
                 },
-                unit_amount: Math.round(quote.total * 100),
+                unit_amount: Math.round(quote.totalFaiRefacFee * 100),
             },
             quantity: 1,
         }],

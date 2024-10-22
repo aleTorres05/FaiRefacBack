@@ -20,6 +20,12 @@ const schema = new mongoose.Schema({
     total: {
         type: Number,
     },
+    totalFaiRefacFee: {
+        type: Number,
+    },
+    fee: {
+        type: Number,
+    },
     paymentId: {
         type: String,
     },
