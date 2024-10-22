@@ -25,11 +25,11 @@ router.post('/create/car/:carId/mechanic/:mechanicId', async (req,res) => {
     };
 });
 
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth, validateUserType('client'), async (req, res) => {
     const { id } = req.params;
-
+    const clientId = req.user.client._id
     try {
-        const quote = await quoteUseCase.getById(id);
+        const quote = await quoteUseCase.getById(id, clientId);
         res.json({
             success: true,
             data: { quote },
@@ -62,11 +62,11 @@ router.put('/calculate/:id', auth, async (req, res) => {
     };
 });
 
-router.patch('/:id/reject/:repairShopQuoteId', auth, async ( req, res) => {
+router.patch('/:id/reject/:repairShopQuoteId', auth, validateUserType('client'), async ( req, res) => {
     const { id, repairShopQuoteId } = req.params;
-
+    const clientId = req.user.client._id
     try {
-        const quote = await quoteUseCase.rejectRepairShopQuoteById( id, repairShopQuoteId );
+        const quote = await quoteUseCase.rejectRepairShopQuoteById( id, repairShopQuoteId, clientId );
         res.json({
             success: true,
             data: { quote },
@@ -81,9 +81,11 @@ router.patch('/:id/reject/:repairShopQuoteId', auth, async ( req, res) => {
 });
 
 
-router.post('/:id/create-checkout-session', auth, async (req, res) => {
+router.post('/:id/create-checkout-session', auth, validateUserType('client'), async (req, res) => {
+    const { id } = req.params;
+    const clientId = req.user.client._id;
     try {
-        const session = await quoteUseCase.createCheckoutSession(req.params.id);
+        const session = await quoteUseCase.createCheckoutSession(id, clientId);
         res.json({
             success: true,
             data: { session }
