@@ -1,5 +1,6 @@
 const express = require('express');
 const repairShopQuoteUseCase = require('../usecases/repairShopQuote.usecase');
+const { calculateTotalById } = require('../usecases/quote.usecase')
 const auth = require('../middlewares/auth.middleware');
 const validateUserType = require('../middlewares/validateUserType.middleware');
 
