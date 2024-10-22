@@ -2,14 +2,16 @@ const express = require("express");
 const userUseCase = require("../usecases/user.usecase");
 const auth = require("../middlewares/auth.middleware");
 const upload = require("../middlewares/upload.middleware");
+const createError = require('http-errors')
 
 const router = express.Router();
 
 router.get("/find-email/:email", auth, async (req, res) => {
   const { email } = req.params;
+  const userId = req.user._id
 
   try {
-    const user = await userUseCase.getByEmail(email);
+    const user = await userUseCase.getByEmail(email, userId);
     res.json({
       success: true,
       data: { user },
@@ -25,8 +27,13 @@ router.get("/find-email/:email", auth, async (req, res) => {
 
 router.get("/:id", auth, async (req, res) => {
   const { id } = req.params;
+  const userId = req.user._id
   try {
-    const user = await userUseCase.getById(id);
+    if (id.toString() !== userId.toString()){
+     throw createError (403, "Unauthorized to get the info.")
+    }
+
+    const user = await userUseCase.getById(id, req.user._id.toString());
     res.json({
       success: true,
       data: { user },
@@ -62,12 +69,7 @@ router.patch("/:id/client",auth, upload.single("profilePicture"), async (req, re
     const file = req.file;
 
     try {
-      const updatedUser = await userUseCase.updateByIdUserClient(
-        id,
-        req.body,
-        userId,
-        file
-      );
+      const updatedUser = await userUseCase.updateByIdUserClient(id, req.body, userId, file);
       res.json({
         success: true,
         data: { user: updatedUser },
@@ -88,12 +90,7 @@ router.patch("/:id/repairShop", auth, upload.single("profilePicture"), async (re
     const file = req.file;
 
     try {
-      const updatedUser = await userUseCase.updateByIdUserRepairShop(
-        id,
-        req.body,
-        userId,
-        file
-      );
+      const updatedUser = await userUseCase.updateByIdUserRepairShop(id, req.body, userId, file);
       res.json({
         success: true,
         data: { user: updatedUser },
@@ -146,9 +143,10 @@ router.post("/verify-otp", async (req, res) => {
 
 router.delete("/:id", auth, async (req, res) => {
   const { id } = req.params;
+  const userId = req.user._id
 
   try {
-    const userDeleted = await userUseCase.deleteById(id);
+    const userDeleted = await userUseCase.deleteById(id, userId);
     res.json({
       success: true,
       data: { user: userDeleted }

@@ -1,6 +1,7 @@
 const express = require('express');
 const quoteUseCase = require('../usecases/quote.usecase');
 const auth = require('../middlewares/auth.middleware');
+const validateUserType = require('../middlewares/validateUserType.middleware');
 
 
 const router = express.Router();

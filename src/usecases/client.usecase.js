@@ -4,13 +4,18 @@ const Car = require('../models/car.model');
 const uploadToS3 = require('../lib/aws')
 
 
-async function associateCarWithClient(clientId, carData, file = null) {
+async function associateCarWithClient(id, clientId, carData, file = null) {
 
-    const client = await Client.findById(clientId);
-
+    const client = await Client.findById(id);
+    
     if (!client) {
         throw createError(404,'Client not found');
     }
+
+    if (client._id.toString() !== clientId.toString()){
+        throw createError (403, "Unauthorized to update this info.");
+    }
+
 
     const newCar = await Car.create(carData);
 
@@ -28,7 +33,12 @@ async function associateCarWithClient(clientId, carData, file = null) {
     return client.populate("cars");
 };
 
-async function getById(id) {
+async function getById(id, clientId) {
+    
+    if (id.toString() !== clientId.toString()) {
+        throw createError(403, "You are not authorized to access this client's information.");
+    }
+
     const client = await Client.findById(id)
         .populate({
             path: 'cars',
@@ -53,6 +63,8 @@ async function getById(id) {
     if (!client) {
         throw createError(404, 'Client not found');
     }
+
+    
 
     return client;
 }
