@@ -249,7 +249,6 @@ async function handleStripeEvent(req) {
     try {
 
         event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_ENDPOINT_SECRET);
-
     } catch (error) {
         throw createError(500, `Webhook Error: ${error.message}`);
     }
@@ -261,9 +260,9 @@ async function handleStripeEvent(req) {
         const quote = await Quote.findOne({ sessionId: session.id }).populate('repairShopQuotes');
 
         if (quote) {
+            
             quote.status = 'paid';
             quote.paymentId = session.payment_intent;
-            quote.ticketUrl = session.receipt_url; 
 
             const updateRepairShopQuotes = quote.repairShopQuotes.map(async (repairShopQuoteId) => {
                 const repairShopQuote = await RepairShopQuote.findById(repairShopQuoteId);
@@ -277,10 +276,21 @@ async function handleStripeEvent(req) {
 
             await Promise.all(updateRepairShopQuotes);
             await quote.save(); 
-
             console.log(`Quote ${quote._id} and associated RepairShopQuotes marked as paid.`);
         } else {
-            console.log('Quote not found for session.id:', session.id);
+           console.log('Quote not found for session.id:', session.id);
+        }
+    }
+
+    if (event.type === 'charge.updated') {
+        const session = event.data.object;
+        const quote = await Quote.findOne({ paymentId: session.payment_intent })
+        console.log(quote)
+        if (quote) {
+            quote.ticketUrl = session.receipt_url;
+            await quote.save();
+        } else {
+            console.log('Quote not found for session.payment_intent:', session.payment_intent);
         }
     }
 
