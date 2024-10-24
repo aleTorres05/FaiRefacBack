@@ -132,7 +132,7 @@ async function updateByIdUserClient(id, clientData, userId, file = null) {
 }
 
 async function updateByIdUserRepairShop(id, repairShopData, userId, file = null) {
-  let user = await Us .findById(id);
+  let user = await User.findById(id);
 
   if (!user) {
     throw createError(404, "User not found");
