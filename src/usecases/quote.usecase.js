@@ -6,6 +6,8 @@ const RepairShop = require("../models/repairShop.model");
 const Mechanic = require("../models/mechanic.model");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 const createError = require("http-errors");
+const jwt = require("../lib/jwt");
+const encrypt = require("../lib/encrypt");
 
 async function create(carId, mechanicId, items) {
   if (!carId || !mechanicId || !items || items.length === 0) {
@@ -313,6 +315,21 @@ async function handleStripeEvent(req) {
   return { success: true, message: "Event handled" };
 }
 
+async function quoteLinkTokenGenerater(clientId, carId) {
+  const client = await Client.findById(clientId);
+  if (!client) {
+    throw createError(401, "Invalid data");
+  }
+
+  const car = await Car.findById(carId);
+  if (!car) {
+    throw createError(401, "Invalid data");
+  }
+
+  const token = jwt.signQuoteLink({ clientId: client._id, carId: car._id });
+  return token;
+}
+
 module.exports = {
   create,
   getById,
@@ -320,4 +337,5 @@ module.exports = {
   rejectRepairShopQuoteById,
   createCheckoutSession,
   handleStripeEvent,
+  quoteLinkTokenGenerater,
 };
