@@ -7,10 +7,14 @@ const validateUserType = require("../middlewares/validateUserType.middleware");
 const router = express.Router();
 
 router.post("/create/car/:carId/mechanic/:mechanicId", async (req, res) => {
-  const { carId, mechanicId } = req.params;
-  const { items } = req.body;
-
   try {
+    const { carId, mechanicId, clientId } = req.params;
+    const { items } = req.body;
+
+    if (clientId && carId) {
+      await quoteLinkAuth(req, res);
+    }
+
     const quote = await quoteUseCase.create(carId, mechanicId, items);
     res.json({
       success: true,
@@ -27,7 +31,7 @@ router.post("/create/car/:carId/mechanic/:mechanicId", async (req, res) => {
 
 router.get("/:id", auth, validateUserType("client"), async (req, res) => {
   const { id } = req.params;
-  const clientId = req.user.client._id;
+  const clientId = req.user.client;
   try {
     const quote = await quoteUseCase.getById(id, clientId);
     res.json({
@@ -67,7 +71,7 @@ router.patch(
   validateUserType("client"),
   async (req, res) => {
     const { id, repairShopQuoteId } = req.params;
-    const clientId = req.user.client._id;
+    const clientId = req.user.client;
     try {
       const quote = await quoteUseCase.rejectRepairShopQuoteById(
         id,
@@ -94,7 +98,7 @@ router.post(
   validateUserType("client"),
   async (req, res) => {
     const { id } = req.params;
-    const clientId = req.user.client._id;
+    const clientId = req.user.client;
     try {
       const session = await quoteUseCase.createCheckoutSession(id, clientId);
       res.json({
@@ -132,25 +136,39 @@ router.post(
   }
 );
 
-router.post(
-  "/quote-link-token/:clientId/:carId",
-  quoteLinkAuth,
-  async (req, res) => {
-    try {
-      const { clientId, carId } = req.body;
-      const token = await quoteUseCase.quoteLinkTokenGenerater(clientId, carId);
-      res.json({
-        succes: true,
-        data: { token },
-      });
-    } catch (error) {
-      res.status(error.status || 500);
-      res.json({
-        success: false,
-        error: error.message,
-      });
-    }
+router.post("/quote-link-token/:clientId/:carId", async (req, res) => {
+  try {
+    const { clientId, carId } = req.body;
+    const token = await quoteUseCase.quoteLinkTokenGenerater(clientId, carId);
+    res.json({
+      succes: true,
+      data: { token },
+    });
+  } catch (error) {
+    res.status(error.status || 500);
+    res.json({
+      success: false,
+      error: error.message,
+    });
   }
-);
+});
+
+router.post("/validate-token/:token", async (req, res) => {
+  try {
+    const response = await quoteLinkAuth(req, res);
+    console.log("back", response);
+
+    res.json({
+      success: true,
+      data: response,
+    });
+  } catch (error) {
+    res.status(error.status || 500);
+    res.json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
 
 module.exports = router;

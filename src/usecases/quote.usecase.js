@@ -6,8 +6,6 @@ const RepairShop = require("../models/repairShop.model");
 const Mechanic = require("../models/mechanic.model");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 const createError = require("http-errors");
-const createError = require("http-errors");
-const Car = require("../models/car.model");
 const jwt = require("../lib/jwt");
 const encrypt = require("../lib/encrypt");
 
@@ -324,17 +322,13 @@ async function quoteLinkTokenGenerater(clientId, carId) {
   }
 
   const car = await Car.findById(carId);
-  if (!client) {
+  if (!car) {
     throw createError(401, "Invalid data");
   }
 
   const token = jwt.signQuoteLink({ clientId: client._id, carId: car._id });
   return token;
 }
-
-module.exports = {
-  login,
-};
 
 module.exports = {
   create,

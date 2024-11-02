@@ -11,7 +11,7 @@ function verify(token) {
 }
 
 function signQuoteLink(payload) {
-  return jsonwebtoken.sign(payload, JWT_SECRET, { expiresIn: "15m" });
+  return jsonwebtoken.sign(payload, JWT_SECRET, { expiresIn: "30m" });
 }
 
 module.exports = {
