@@ -31,7 +31,7 @@ router.post("/create/car/:carId/mechanic/:mechanicId", async (req, res) => {
 
 router.get("/:id", auth, validateUserType("client"), async (req, res) => {
   const { id } = req.params;
-  const clientId = req.user.client;
+  const clientId = req.user.client._id;
   try {
     const quote = await quoteUseCase.getById(id, clientId);
     res.json({
@@ -98,7 +98,7 @@ router.post(
   validateUserType("client"),
   async (req, res) => {
     const { id } = req.params;
-    const clientId = req.user.client.id;
+    const clientId = req.user.client._id;
     try {
       const session = await quoteUseCase.createCheckoutSession(id, clientId);
       res.json({
