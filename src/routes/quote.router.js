@@ -98,7 +98,7 @@ router.post(
   validateUserType("client"),
   async (req, res) => {
     const { id } = req.params;
-    const clientId = req.user.client;
+    const clientId = req.user.client.id;
     try {
       const session = await quoteUseCase.createCheckoutSession(id, clientId);
       res.json({
