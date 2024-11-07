@@ -11,6 +11,7 @@ const quoteRouter = require("./routes/quote.router");
 const repairShopRouter = require("./routes/repairShop.router");
 const repairShopQuoteRouter = require("./routes/repairShopQuote.router");
 const carRouter = require("./routes/car.router");
+const paymentRoutes = require("./routes/payment.router");
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/quote", quoteRouter);
 app.use("/repairshop", repairShopRouter);
 app.use("/repairshop-quote", repairShopQuoteRouter);
 app.use("/car", carRouter);
+app.use("/api/payment", paymentRoutes);
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../public", "index.html"));
