@@ -171,4 +171,31 @@ router.post("/validate-token/:token", async (req, res) => {
   }
 });
 
+router.get(
+  "/payment-info/:sessionId",
+  auth,
+  validateUserType("client"),
+  async (req, res) => {
+    const sessionId = req.params.sessionId;
+    const clientId = req.user.client._id;
+    
+    try {
+      const paymentInfo = await quoteUseCase.getPaymentInfoBySessionId(
+        sessionId,
+        clientId
+      );
+      res.json({
+        succes: true,
+        data: paymentInfo,
+      });
+    } catch (error) {
+      res.status(error.status || 500);
+      res.json({
+        succes: false,
+        error: error.message,
+      });
+    }
+  }
+);
+
 module.exports = router;

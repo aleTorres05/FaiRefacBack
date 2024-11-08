@@ -330,6 +330,32 @@ async function quoteLinkTokenGenerater(clientId, carId) {
   return token;
 }
 
+async function getPaymentInfoBySessionId(sessionId, clientId) {
+  if (!sessionId || !clientId) {
+    throw createError(400, "Missing required data to find the quote");
+  }
+
+  const quote = await Quote.findOne({ sessionId });
+  if (!quote) {
+    throw createError(404, "Quote not found for this sessionId.");
+  }
+
+  const client = await Client.findById(clientId).populate("cars", "_id quotes");
+  if (!client) {
+    throw createError(404, "Client not found.");
+  }
+
+  const hasQuote = client.cars.some(car =>
+    car.quotes.some(quoteId => quoteId.equals(quote._id))
+  );
+
+  if (!hasQuote) {
+    throw createError(403, "Client does not have access to this quote.");
+  }
+  const {ticketUrl, paymentId} = quote
+  return {ticketUrl, paymentId}
+}
+
 module.exports = {
   create,
   getById,
@@ -338,4 +364,5 @@ module.exports = {
   createCheckoutSession,
   handleStripeEvent,
   quoteLinkTokenGenerater,
+  getPaymentInfoBySessionId,
 };
