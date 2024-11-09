@@ -71,7 +71,7 @@ router.patch(
   validateUserType("client"),
   async (req, res) => {
     const { id, repairShopQuoteId } = req.params;
-    const clientId = req.user.client;
+    const clientId = req.user.client._id;
     try {
       const quote = await quoteUseCase.rejectRepairShopQuoteById(
         id,
@@ -178,7 +178,7 @@ router.get(
   async (req, res) => {
     const sessionId = req.params.sessionId;
     const clientId = req.user.client._id;
-    
+
     try {
       const paymentInfo = await quoteUseCase.getPaymentInfoBySessionId(
         sessionId,
