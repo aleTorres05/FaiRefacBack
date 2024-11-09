@@ -345,15 +345,15 @@ async function getPaymentInfoBySessionId(sessionId, clientId) {
     throw createError(404, "Client not found.");
   }
 
-  const hasQuote = client.cars.some(car =>
-    car.quotes.some(quoteId => quoteId.equals(quote._id))
+  const hasQuote = client.cars.some((car) =>
+    car.quotes.some((quoteId) => quoteId.equals(quote._id))
   );
 
   if (!hasQuote) {
     throw createError(403, "Client does not have access to this quote.");
   }
-  const {ticketUrl, paymentId} = quote
-  return {ticketUrl, paymentId}
+  const { ticketUrl, paymentId } = quote;
+  return { ticketUrl, paymentId };
 }
 
 module.exports = {
