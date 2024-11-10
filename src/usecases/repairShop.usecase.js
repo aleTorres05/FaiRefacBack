@@ -47,6 +47,9 @@ async function createExpressAccount(id) {
             name: repairShop.companyName,
             mcc: '7538', // specific category code for automotive services
         },
+        settings: {
+            payouts: { schedule: { interval: 'manual' } }, 
+        },
     });
 
     repairShop.stripeAccountId = account.id;
