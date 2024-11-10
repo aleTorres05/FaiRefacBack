@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
     const createdMechanic = await mechanicUseCase.create(req.body);
     res.json({
       success: true,
-      data: { Mechanic: createdMechanic },
+      message: "Mechanic was successfully created",
     });
   } catch (error) {
     res.status(error.status || 500);

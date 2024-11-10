@@ -240,7 +240,7 @@ async function createCheckoutSession(id, clientId) {
   quote.sessionId = session.id;
   await quote.save();
 
-  return session;
+  return session.url
 }
 
 async function handleStripeEvent(req) {
