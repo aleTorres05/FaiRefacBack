@@ -51,4 +51,31 @@ router.get(
   }
 );
 
+router.get(
+  "/account/:id",
+  auth,
+  validateUserType("repairShop"),
+  async (req, res) => {
+    const { id } = req.params;
+    const repairShopId = req.user.repairShop._id;
+
+    try {
+      const updatedAccount = await repairShopUseCase.updateStripeAccount(
+        id,
+        repairShopId
+      );
+      res.json({
+        success: true,
+        message: "Repair shop payment info successfully updated",
+      });
+    } catch (error) {
+      res.status(error.status || 500);
+      res.json({
+        success: false,
+        error: error.message,
+      });
+    }
+  }
+);
+
 module.exports = router;
