@@ -339,7 +339,7 @@ async function handleStripeEvent(req) {
     const repairShop = await RepairShop.findOne({ stripeAccountId: account.id });
 
     if (repairShop) {
-      if (account.details_submitted) {
+      if (account.charges_enabled) {
         
         repairShop.stripeAccountActive = true;
         await repairShop.save();
