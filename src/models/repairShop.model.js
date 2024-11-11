@@ -92,6 +92,15 @@ const schema = new mongoose.Schema({
       ref: "RepairShopQuote",
     },
   ],
+  stripeAccountId: 
+  {
+    type: String
+  },
+  stripeAccountActive: 
+  {
+    type: Boolean,
+    default: false,
+  }
 });
 
 schema.pre("save", setDefaultProfilePicture);
