@@ -300,8 +300,30 @@ async function handleStripeEvent(req) {
   if (event.type === "charge.updated") {
     const session = event.data.object;
     const quote = await Quote.findOne({ paymentId: session.payment_intent });
-    console.log(quote);
+    
     if (quote) {
+
+      const transferPromises = quote.repairShopQuotes.map(async (repairShopQuoteId) => {
+        const repairShopQuote = await RepairShopQuote.findById(repairShopQuoteId).populate("repairShop");
+  
+        if (repairShopQuote && repairShopQuote.totalPrice > 0) {
+          
+          const repairShop = repairShopQuote.repairShop;
+          try {
+            await stripe.transfers.create({
+              amount: Math.round(repairShopQuote.totalPrice * 100), 
+              currency: "mxn",
+              destination: repairShop.stripeAccountId, 
+              description: `Transfer for RepairShopQuote ${repairShopQuoteId}`,
+            });
+          } catch (transferError) {
+            console.error(`Failed to transfer funds for RepairShopQuote ${repairShopQuoteId}:`, transferError);
+          }
+        }
+      });
+  
+      await Promise.all(transferPromises);
+
       quote.ticketUrl = session.receipt_url;
       await quote.save();
     } else {
@@ -309,6 +331,22 @@ async function handleStripeEvent(req) {
         "Quote not found for session.payment_intent:",
         session.payment_intent
       );
+    }
+  }
+
+  if (event.type === "account.updated") {
+    const account = event.data.object;
+    const repairShop = await RepairShop.findOne({ stripeAccountId: account.id });
+
+    if (repairShop) {
+      if (account.details_submitted) {
+        
+        repairShop.stripeAccountActive = true;
+        await repairShop.save();
+        console.log(`RepairShop ${repairShop._id} Stripe account activated.`);
+      }
+    } else {
+      console.log("RepairShop not found for account id:", account.id);
     }
   }
 

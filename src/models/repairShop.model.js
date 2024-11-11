@@ -96,6 +96,11 @@ const schema = new mongoose.Schema({
   {
     type: String
   },
+  stripeAccountActive: 
+  {
+    type: Boolean,
+    default: false,
+  }
 });
 
 schema.pre("save", setDefaultProfilePicture);

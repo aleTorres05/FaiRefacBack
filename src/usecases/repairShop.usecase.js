@@ -57,7 +57,11 @@ async function createExpressAccount(id) {
     return repairShop;
 } 
 
-async function createAccountLink(id) {
+async function createAccountLink(id, repairShopId) {
+
+    if (id.toString() !== repairShopId.toString()) {
+        throw createError (403, "Unauthorized to get the info.")
+     }
     const repairShop = await RepairShop.findById(id);
     const accountLink = await stripe.accountLinks.create({
         account: repairShop.stripeAccountId,
