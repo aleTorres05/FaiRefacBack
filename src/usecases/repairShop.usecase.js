@@ -72,6 +72,21 @@ async function createAccountLink(id, repairShopId) {
     return accountLink.url;
 }
 
+async function updateStripeAccount(id, repairShopId) {
+    if (id.toString() !== repairShopId.toString()) {
+        throw createError (403, "Unauthorized to get the info.")
+     }
+
+     const repairShop = await RepairShop.findById(id);
+     const accountId = repairShop.stripeAccountId;
+      const account = await stripe.accounts.update(accountId, {
+        business_profile: {
+          name: repairShop.companyName, 
+        }
+      });
+    return account;
+  }
+
 
 
 
@@ -79,5 +94,6 @@ module.exports = {
     getById,
     createAccountLink,
     createExpressAccount,
+    updateStripeAccount,
 }
 
