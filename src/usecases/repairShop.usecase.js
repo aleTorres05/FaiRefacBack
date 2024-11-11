@@ -65,7 +65,7 @@ async function createAccountLink(id, repairShopId) {
     const repairShop = await RepairShop.findById(id);
     const accountLink = await stripe.accountLinks.create({
         account: repairShop.stripeAccountId,
-        refresh_url: `${process.env.BASE_URL}/retry`,
+        refresh_url: `${process.env.BASE_URL}/dashboard`,
         return_url: `${process.env.BASE_URL}/dashboard`,
         type: 'account_onboarding',
     });
