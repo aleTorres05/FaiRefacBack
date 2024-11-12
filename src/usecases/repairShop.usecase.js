@@ -80,9 +80,7 @@ async function updateStripeAccount(id, repairShopId) {
      const repairShop = await RepairShop.findById(id);
      const accountId = repairShop.stripeAccountId;
       const account = await stripe.accounts.update(accountId, {
-        business_profile: {
-          name: repairShop.companyName, 
-        }
+        metadata: { lastUpdateCheck: new Date().toISOString() }
       });
     return account;
   }
