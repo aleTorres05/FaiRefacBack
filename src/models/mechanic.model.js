@@ -1,3 +1,4 @@
+const validateZipCode = require('../lib/zipCodeValidation')
 const mongoose = require('mongoose');
 
 const addressSchema = new mongoose.Schema({
@@ -29,6 +30,16 @@ const addressSchema = new mongoose.Schema({
         required: true,
         minLength: 5,
         maxLength: 5,
+        validate: {
+            validator: async function (v) {
+                const result = validateZipCode(v, this.state);
+                if (!result.isValid) {
+                  throw new Error(result.message);
+                }
+                return true; 
+              },
+              message: (props) => `${props.value} is not a valid zip code for the specified state.`,
+            }
     },
     city: {
         type: String,

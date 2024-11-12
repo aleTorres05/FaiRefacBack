@@ -31,7 +31,7 @@ router.post("/create/car/:carId/mechanic/:mechanicId", async (req, res) => {
 
 router.get("/:id", auth, validateUserType("client"), async (req, res) => {
   const { id } = req.params;
-  const clientId = req.user.client;
+  const clientId = req.user.client._id;
   try {
     const quote = await quoteUseCase.getById(id, clientId);
     res.json({
@@ -71,7 +71,7 @@ router.patch(
   validateUserType("client"),
   async (req, res) => {
     const { id, repairShopQuoteId } = req.params;
-    const clientId = req.user.client;
+    const clientId = req.user.client._id;
     try {
       const quote = await quoteUseCase.rejectRepairShopQuoteById(
         id,
@@ -98,7 +98,7 @@ router.post(
   validateUserType("client"),
   async (req, res) => {
     const { id } = req.params;
-    const clientId = req.user.client;
+    const clientId = req.user.client._id;
     try {
       const session = await quoteUseCase.createCheckoutSession(id, clientId);
       res.json({
@@ -170,5 +170,32 @@ router.post("/validate-token/:token", async (req, res) => {
     });
   }
 });
+
+router.get(
+  "/payment-info/:sessionId",
+  auth,
+  validateUserType("client"),
+  async (req, res) => {
+    const sessionId = req.params.sessionId;
+    const clientId = req.user.client._id;
+
+    try {
+      const paymentInfo = await quoteUseCase.getPaymentInfoBySessionId(
+        sessionId,
+        clientId
+      );
+      res.json({
+        succes: true,
+        data: paymentInfo,
+      });
+    } catch (error) {
+      res.status(error.status || 500);
+      res.json({
+        succes: false,
+        error: error.message,
+      });
+    }
+  }
+);
 
 module.exports = router;
