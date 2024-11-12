@@ -78,11 +78,28 @@ async function updateStripeAccount(id, repairShopId) {
      }
 
      const repairShop = await RepairShop.findById(id);
+     if (!repairShop) {
+        throw createError(404, "Repair shop not found.");
+    }
+
      const accountId = repairShop.stripeAccountId;
+    if (!accountId) {
+        throw createError(400, "Repair shop does not have an associated Stripe account ID.");
+    }
       const account = await stripe.accounts.update(accountId, {
         metadata: { lastUpdateCheck: new Date().toISOString() }
       });
-    return account;
+
+      if (account.charges_enabled) {
+        
+        repairShop.stripeAccountActive = true;
+        await repairShop.save();
+
+      } else {
+        throw createError(400, "Stripe account activation is incomplete. Please complete the activation process in Stripe.");
+      }
+    return repairShop.stripeAccountActive
+
   }
 
 
