@@ -161,6 +161,13 @@ async function deleteItemById(id, clientId, itemId) {
     throw createError(403, "Unauthorized to update this quote.");
   }
 
+  const itemExists = repairShopQuote.items.some(
+    (item) => item._id.toString() === itemId
+  );
+  if (!itemExists) {
+    throw createError(404, "Item not found in the repairShopQuote.");
+  }
+
   const updateRepairShopQuote = await RepairShopQuote.findByIdAndUpdate(
     id,
     {
@@ -172,6 +179,13 @@ async function deleteItemById(id, clientId, itemId) {
   if (!updateRepairShopQuote) {
     throw createError(405, "Item does not belong to the quote.");
   }
+
+  const newTotalPrice = updateRepairShopQuote.items.reduce((total, item) => {
+    return total + (item.itemTotalPrice || 0);
+  }, 0);
+
+  updateRepairShopQuote.totalPrice = newTotalPrice;
+  await updateRepairShopQuote.save();
 
   const calculateTotal = await calculateTotalById(quote._id);
 
