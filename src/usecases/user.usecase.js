@@ -5,7 +5,8 @@ const Client = require("../models/client.model");
 const RepairShop = require("../models/repairShop.model");
 const uploadToS3 = require("../lib/aws");
 const { generateOTP, sendOTPEmail } = require("../lib/emailService");
-const { createExpressAccount } = require("../usecases/repairShop.usecase")
+const { getLatLngByZipCode, getNearbyZipCodes } = require("../lib/geoNames");
+const { createExpressAccount } = require("../usecases/repairShop.usecase");
 
 async function create(userData) {
   const emailFound = await User.findOne({ email: userData.email });
@@ -153,6 +154,13 @@ async function updateByIdUserRepairShop(id, repairShopData, userId, file = null)
       "User must be a repair shop owner to perform this action"
     );
   }
+
+  const { lat, lng } = await getLatLngByZipCode(repairShopData.address.zipCode);
+
+  
+  const nearbyZipCodes = await getNearbyZipCodes(lat, lng);
+  
+  repairShopData.nearbyZipCodes = nearbyZipCodes;
 
   const newRepairShop = await RepairShop.create(repairShopData);
 
