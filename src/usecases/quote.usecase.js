@@ -25,7 +25,7 @@ async function create(carId, mechanicId, items) {
   }
 
   const repairShops = await RepairShop.find({
-    "address.zipCode": mechanic.address.zipCode,
+    nearbyZipCodes: { $in: [mechanic.address.zipCode] },
   });
   if (!repairShops.length) {
     throw createError(

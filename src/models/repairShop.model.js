@@ -86,6 +86,10 @@ const schema = new mongoose.Schema({
     type: addressSchema,
     required: true,
   },
+  nearbyZipCodes: {
+    type: [String],
+    default: []
+  },
   quotes: [
     {
       type: mongoose.Schema.Types.ObjectId,
