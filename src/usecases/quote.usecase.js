@@ -175,6 +175,10 @@ async function rejectRepairShopQuoteById(id, repairShopQuoteId, clientId) {
     (quote) => quote._id.toString() !== repairShopQuoteId.toString()
   );
 
+  if (quote.repairShopQuotes.length === 0) {
+    quote.status = "rejected";
+  }
+  
   await RepairShopQuote.findByIdAndUpdate(repairShopQuoteId, {
     status: "rejected",
   });
