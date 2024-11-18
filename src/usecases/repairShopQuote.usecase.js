@@ -50,6 +50,11 @@ async function updateById(id, repairShopId, updatedItems) {
       throw createError(403, "Unauthorized to update this info.");
     }
 
+    const quote = await Quote.findOne({ repairShopQuotes: id });
+    if (!quote) {
+      throw createError(404, "Quote not found.");
+    }
+
     let totalPrice = 0;
     repairShopQuote.items = repairShopQuote.items.map((item) => {
       const updatedItem = updatedItems.find(
@@ -84,6 +89,11 @@ async function updateById(id, repairShopId, updatedItems) {
     await session.abortTransaction();
     throw createError(500, error);
   } finally {
+    const quote = await Quote.findOne({ repairShopQuotes: id });
+    if (quote) {
+      await calculateTotalById(quote._id);
+    }
+
     session.endSession();
   }
 }
