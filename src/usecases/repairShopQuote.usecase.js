@@ -82,8 +82,6 @@ async function updateById(id, repairShopId, updatedItems) {
 
     await repairShopQuote.save({ session });
 
-    const calculateTotal = await calculateTotalById(quote._id);
-    
     await session.commitTransaction();
 
     return repairShopQuote;
@@ -91,6 +89,11 @@ async function updateById(id, repairShopId, updatedItems) {
     await session.abortTransaction();
     throw createError(500, error);
   } finally {
+    const quote = await Quote.findOne({ repairShopQuotes: id });
+    if (quote) {
+      await calculateTotalById(quote._id);
+    }
+
     session.endSession();
   }
 }
