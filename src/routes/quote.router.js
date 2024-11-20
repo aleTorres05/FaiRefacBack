@@ -156,7 +156,6 @@ router.post("/quote-link-token/:clientId/:carId", async (req, res) => {
 router.post("/validate-token/:token", async (req, res) => {
   try {
     const response = await quoteLinkAuth(req, res);
-    console.log("back", response);
 
     res.json({
       success: true,

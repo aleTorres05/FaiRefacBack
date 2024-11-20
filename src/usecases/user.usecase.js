@@ -27,7 +27,7 @@ async function getByEmail(email, userId) {
   }
 
   if (user._id.toString() !== userId.toString()) {
-    throw createError(403, "Unauthorized to get the info.")
+    throw createError(403, "Unauthorized to get the info.");
   }
 
   if (user.isClient) {
@@ -37,22 +37,27 @@ async function getByEmail(email, userId) {
         path: "cars",
         model: "Car",
         populate: {
-          path: "quotes", 
+          path: "quotes",
           model: "Quote",
-        }
-      }
+          populate: {
+            path: "repairShopQuotes",
+            model: "RepairShopQuote",
+            select: "status",
+          },
+        },
+      },
     });
   } else if (user.isRepairShop) {
     user = await User.findOne({ email }).populate({
       path: "repairShop",
       populate: {
-        path: "quotes", 
+        path: "quotes",
         model: "RepairShopQuote",
         populate: [
-          { path: "car", model: "Car" }, 
-          { path: "mechanic", model: "Mechanic" }, 
-        ]
-      }
+          { path: "car", model: "Car" },
+          { path: "mechanic", model: "Mechanic" },
+        ],
+      },
     });
   }
 
@@ -60,7 +65,6 @@ async function getByEmail(email, userId) {
 }
 
 async function getById(id) {
-
   let user = await User.findById(id);
 
   if (!user) {
@@ -74,22 +78,27 @@ async function getById(id) {
         path: "cars",
         model: "Car",
         populate: {
-          path: "quotes", 
+          path: "quotes",
           model: "Quote",
-        }
-      }
+          populate: {
+            path: "repairShopQuotes",
+            model: "RepairShopQuote",
+            select: "status",
+          },
+        },
+      },
     });
   } else if (user.isRepairShop) {
     user = await User.findById(id).populate({
       path: "repairShop",
       populate: {
-        path: "quotes", 
+        path: "quotes",
         model: "RepairShopQuote",
         populate: [
-          { path: "car", model: "Car" }, 
-          { path: "mechanic", model: "Mechanic" }, 
-        ]
-      }
+          { path: "car", model: "Car" },
+          { path: "mechanic", model: "Mechanic" },
+        ],
+      },
     });
   }
 
@@ -133,7 +142,12 @@ async function updateByIdUserClient(id, clientData, userId, file = null) {
   return user;
 }
 
-async function updateByIdUserRepairShop(id, repairShopData, userId, file = null) {
+async function updateByIdUserRepairShop(
+  id,
+  repairShopData,
+  userId,
+  file = null
+) {
   let user = await User.findById(id);
 
   if (!user) {
@@ -157,9 +171,8 @@ async function updateByIdUserRepairShop(id, repairShopData, userId, file = null)
 
   const { lat, lng } = await getLatLngByZipCode(repairShopData.address.zipCode);
 
-  
   const nearbyZipCodes = await getNearbyZipCodes(lat, lng);
-  
+
   repairShopData.nearbyZipCodes = nearbyZipCodes;
 
   const newRepairShop = await RepairShop.create(repairShopData);
@@ -171,7 +184,7 @@ async function updateByIdUserRepairShop(id, repairShopData, userId, file = null)
     await newRepairShop.save();
   }
 
-  const createStripeAccountId = await createExpressAccount(newRepairShop._id)
+  const createStripeAccountId = await createExpressAccount(newRepairShop._id);
 
   user.repairShop = newRepairShop._id;
 
@@ -221,13 +234,13 @@ async function verifyOTP(email, otp) {
 
 async function deleteById(id, userId) {
   if (id.toString() !== userId.toString()) {
-    throw createError(403, "Unauthorized to delete this user.")
+    throw createError(403, "Unauthorized to delete this user.");
   }
-  const userDeleted = await User.findByIdAndDelete(id)
+  const userDeleted = await User.findByIdAndDelete(id);
 
   if (!userDeleted) {
-    throw createError(404, "User not found.")
-  };
+    throw createError(404, "User not found.");
+  }
 
   return userDeleted;
 }
