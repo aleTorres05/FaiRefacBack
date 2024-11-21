@@ -1,7 +1,11 @@
 const express = require("express");
 const quoteUseCase = require("../usecases/quote.usecase");
 const auth = require("../middlewares/auth.middleware");
-const quoteLinkAuth = require("../middlewares/quoteLink.middleware");
+const {
+  quoteLinkAuth,
+  checkRevokedToken,
+} = require("../middlewares/quoteLink.middleware");
+const { revokeToken } = require("../middlewares/quoteLink.middleware");
 const validateUserType = require("../middlewares/validateUserType.middleware");
 
 const router = express.Router();
@@ -153,7 +157,7 @@ router.post("/quote-link-token/:clientId/:carId", async (req, res) => {
   }
 });
 
-router.post("/validate-token/:token", async (req, res) => {
+router.post("/validate-token", async (req, res) => {
   try {
     const response = await quoteLinkAuth(req, res);
 
@@ -167,6 +171,34 @@ router.post("/validate-token/:token", async (req, res) => {
       success: false,
       error: error.message,
     });
+  }
+});
+
+router.post("/validate-cancel-Link", async (req, res) => {
+  try {
+    const response = await checkRevokedToken(req, res);
+  } catch (error) {
+    res.status(error.status || 500);
+    res.json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+router.post("/revoke-token", (req, res) => {
+  const authorization = req.headers.authorization;
+  if (!authorization)
+    return res.status(401).json({ message: "No token provided" });
+
+  try {
+    if (!authorization) {
+      return res.status(400).json({ message: "Invalid token format" });
+    }
+    revokeToken(authorization);
+    res.status(200).json({ message: "Token revoked successfully" });
+  } catch (error) {
+    res.status(400).json({ message: "Failed to revoke token" });
   }
 });
 
