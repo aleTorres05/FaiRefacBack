@@ -178,7 +178,7 @@ async function rejectRepairShopQuoteById(id, repairShopQuoteId, clientId) {
   if (quote.repairShopQuotes.length === 0) {
     quote.status = "rejected";
   }
-  
+
   await RepairShopQuote.findByIdAndUpdate(repairShopQuoteId, {
     status: "rejected",
   });
@@ -244,7 +244,7 @@ async function createCheckoutSession(id, clientId) {
   quote.sessionId = session.id;
   await quote.save();
 
-  return session.url
+  return session.url;
 }
 
 async function handleStripeEvent(req) {
@@ -304,28 +304,33 @@ async function handleStripeEvent(req) {
   if (event.type === "charge.updated") {
     const session = event.data.object;
     const quote = await Quote.findOne({ paymentId: session.payment_intent });
-    
-    if (quote) {
 
-      const transferPromises = quote.repairShopQuotes.map(async (repairShopQuoteId) => {
-        const repairShopQuote = await RepairShopQuote.findById(repairShopQuoteId).populate("repairShop");
-  
-        if (repairShopQuote && repairShopQuote.totalPrice > 0) {
-          
-          const repairShop = repairShopQuote.repairShop;
-          try {
-            await stripe.transfers.create({
-              amount: Math.round(repairShopQuote.totalPrice * 100), 
-              currency: "mxn",
-              destination: repairShop.stripeAccountId, 
-              description: `Transfer for RepairShopQuote ${repairShopQuoteId}`,
-            });
-          } catch (transferError) {
-            console.error(`Failed to transfer funds for RepairShopQuote ${repairShopQuoteId}:`, transferError);
+    if (quote) {
+      const transferPromises = quote.repairShopQuotes.map(
+        async (repairShopQuoteId) => {
+          const repairShopQuote = await RepairShopQuote.findById(
+            repairShopQuoteId
+          ).populate("repairShop");
+
+          if (repairShopQuote && repairShopQuote.totalPrice > 0) {
+            const repairShop = repairShopQuote.repairShop;
+            try {
+              await stripe.transfers.create({
+                amount: Math.round(repairShopQuote.totalPrice * 100),
+                currency: "mxn",
+                destination: repairShop.stripeAccountId,
+                description: `Transfer for RepairShopQuote ${repairShopQuoteId}`,
+              });
+            } catch (transferError) {
+              console.error(
+                `Failed to transfer funds for RepairShopQuote ${repairShopQuoteId}:`,
+                transferError
+              );
+            }
           }
         }
-      });
-  
+      );
+
       await Promise.all(transferPromises);
 
       quote.ticketUrl = session.receipt_url;
@@ -340,11 +345,12 @@ async function handleStripeEvent(req) {
 
   if (event.type === "account.updated") {
     const account = event.data.object;
-    const repairShop = await RepairShop.findOne({ stripeAccountId: account.id });
+    const repairShop = await RepairShop.findOne({
+      stripeAccountId: account.id,
+    });
 
     if (repairShop) {
       if (account.charges_enabled) {
-        
         repairShop.stripeAccountActive = true;
         await repairShop.save();
         console.log(`RepairShop ${repairShop._id} Stripe account activated.`);
