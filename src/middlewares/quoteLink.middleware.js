@@ -1,7 +1,7 @@
 const createError = require("http-errors");
-const clientUseCase = require("../usecases/client.usecase");
-const carUseCase = require("../usecases/car.usecase");
 const jwt = require("../lib/jwt");
+
+const revokedTokens = new Set();
 
 async function quoteLinkAuth(req, res) {
   try {
@@ -21,4 +21,23 @@ async function quoteLinkAuth(req, res) {
   }
 }
 
-module.exports = quoteLinkAuth;
+async function checkRevokedToken(req, res) {
+  try {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+      throw createError(401, "JWT is required");
+    }
+
+    if (revokedTokens.has(authorization)) {
+      return res.status(403).json({ message: "Token is revoked" });
+    }
+  } catch (error) {
+    return res.status(403).json({ message: "Invalid token" });
+  }
+}
+
+function revokeToken(token) {
+  revokedTokens.add(token);
+}
+
+module.exports = { quoteLinkAuth, checkRevokedToken, revokeToken };
