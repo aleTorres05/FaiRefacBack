@@ -7,7 +7,7 @@ const Mechanic = require("../models/mechanic.model");
 const stripe = require("stripe")(process.env.STRIPE_PRIVATE_KEY);
 const createError = require("http-errors");
 const jwt = require("../lib/jwt");
-const encrypt = require("../lib/encrypt");
+const { sendNewQuoteNotification } = require("../lib/emailService") 
 
 async function create(carId, mechanicId, items) {
   if (!carId || !mechanicId || !items || items.length === 0) {
@@ -73,6 +73,8 @@ async function create(carId, mechanicId, items) {
   );
 
   await newQuote.save();
+
+  await sendNewQuoteNotification(repairShops);
 
   return newQuote;
 }

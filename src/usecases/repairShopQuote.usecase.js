@@ -3,6 +3,7 @@ const Client = require("../models/client.model");
 const RepairShopQuote = require("../models/repairShopQuote.model");
 const Quote = require("../models/quote.model");
 const { calculateTotalById } = require("../usecases/quote.usecase");
+const { sendRepairShopQuoteNotification } = require("../lib/emailService");
 const { default: mongoose } = require("mongoose");
 
 async function updateById(id, repairShopId, updatedItems) {
@@ -81,6 +82,12 @@ async function updateById(id, repairShopId, updatedItems) {
     repairShopQuote.status = "review";
 
     await repairShopQuote.save({ session });
+
+    const client = await Client.findOne({ cars: repairShopQuote.car });
+
+    if (client) {
+      await sendRepairShopQuoteNotification(client);
+    }
 
     await session.commitTransaction();
 
