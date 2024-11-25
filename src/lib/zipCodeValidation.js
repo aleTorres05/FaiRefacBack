@@ -36,7 +36,8 @@ function validateZipCode(zipCode, state = null) {
         normalizedState === "méxico" ||
         normalizedState === "mexico" ||
         normalizedState === "edomex" ||
-        normalizedState === "estado de mexico"
+        normalizedState === "estado de mexico" ||
+        normalizedState === "estado de méxico"
       ) {
         return { isValid: true };
       } else {
