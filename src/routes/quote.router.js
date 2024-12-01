@@ -51,7 +51,7 @@ router.get("/:id", auth, validateUserType("client"), async (req, res) => {
   }
 });
 
-router.put("/calculate/:id", auth, async (req, res) => {
+router.patch("/calculate/:id", auth, async (req, res) => {
   const { id } = req.params;
 
   try {
