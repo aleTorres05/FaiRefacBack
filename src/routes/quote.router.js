@@ -177,6 +177,10 @@ router.post("/validate-token", async (req, res) => {
 router.post("/validate-cancel-Link", async (req, res) => {
   try {
     const response = await checkRevokedToken(req, res);
+    res.json({
+      success: true,
+      data: response,
+    });
   } catch (error) {
     res.status(error.status || 500);
     res.json({
