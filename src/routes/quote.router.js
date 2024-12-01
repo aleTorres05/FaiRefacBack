@@ -142,7 +142,7 @@ router.post(
 
 router.post("/quote-link-token/:clientId/:carId", async (req, res) => {
   try {
-    const { clientId, carId } = req.body;
+    const { clientId, carId } = req.params;
     const token = await quoteUseCase.quoteLinkTokenGenerater(clientId, carId);
     res.json({
       succes: true,
