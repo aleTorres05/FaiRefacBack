@@ -51,7 +51,7 @@ router.get("/:id", auth, validateUserType("client"), async (req, res) => {
   }
 });
 
-router.put("/calculate/:id", auth, async (req, res) => {
+router.patch("/calculate/:id", auth, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -142,7 +142,7 @@ router.post(
 
 router.post("/quote-link-token/:clientId/:carId", async (req, res) => {
   try {
-    const { clientId, carId } = req.body;
+    const { clientId, carId } = req.params;
     const token = await quoteUseCase.quoteLinkTokenGenerater(clientId, carId);
     res.json({
       succes: true,
@@ -177,6 +177,10 @@ router.post("/validate-token", async (req, res) => {
 router.post("/validate-cancel-Link", async (req, res) => {
   try {
     const response = await checkRevokedToken(req, res);
+    res.json({
+      success: true,
+      data: response,
+    });
   } catch (error) {
     res.status(error.status || 500);
     res.json({
